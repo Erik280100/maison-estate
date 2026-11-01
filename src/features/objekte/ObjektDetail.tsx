@@ -62,6 +62,7 @@ export function ObjektDetail() {
   const o = objekt;
   const facts: [string, string][] = [
     ["Objekttyp", LABELS[o.objekttyp]],
+    ["Zustand", o.zustand ? LABELS[o.zustand] : "–"],
     ["Kaufpreis", formatPrice(o.preis)],
     ["Preis pro m²", formatPrice(Math.round(o.preis / o.wohnflaeche))],
     ["Wohnfläche", formatArea(o.wohnflaeche)],
@@ -70,6 +71,7 @@ export function ObjektDetail() {
     ["Adresse", o.strasse ?? "–"],
     ["Freifläche", o.freiflaechen.map((x) => LABELS[x]).join(", ") || "–"],
     ["Parken", o.parken.map((x) => LABELS[x]).join(", ") || "–"],
+    ["Ausstattung", o.ausstattung.map((x) => LABELS[x]).join(", ") || "–"],
   ];
 
   return (

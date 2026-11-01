@@ -1,6 +1,11 @@
 "use client";
 
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
 import Checkbox from "@mui/material/Checkbox";
+import Chip from "@mui/material/Chip";
+import ExpandMoreRounded from "@mui/icons-material/ExpandMoreRounded";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormGroup from "@mui/material/FormGroup";
@@ -14,10 +19,13 @@ import SearchRounded from "@mui/icons-material/SearchRounded";
 import type { Filter } from "./filter";
 import { MultiCheckDropdown } from "./MultiCheckDropdown";
 import {
+  AUSSTATTUNG,
+  ZUSTAND,
   FREIFLAECHEN,
   OBJEKTTYPEN,
   PARKEN,
   ZIMMER_OPTIONEN,
+
   type Freiflaeche,
   type Objekttyp,
   type Parkplatz,
@@ -103,6 +111,65 @@ function CheckGroup<T extends string>({
         ))}
       </FormGroup>
     </FormControl>
+  );
+}
+
+/** Aufklappbare Checkbox-Gruppe (Zustand, Ausstattung). */
+function AufklappGruppe<T extends string>({
+  id,
+  title,
+  options,
+  selected,
+  onChange,
+  hint,
+}: {
+  id: string;
+  title: string;
+  options: { value: T; label: string }[];
+  selected: T[];
+  onChange: (next: T[]) => void;
+  hint: string;
+}) {
+  return (
+    <Accordion disableGutters variant="outlined" sx={{ borderRadius: 2, "&::before": { display: "none" } }}>
+      <AccordionSummary
+        expandIcon={<ExpandMoreRounded />}
+        aria-controls={`${id}-content`}
+        id={`${id}-header`}
+      >
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+          <span style={{ fontWeight: 600 }}>{title}</span>
+          {selected.length > 0 && (
+            <Chip size="small" color="secondary" label={`${selected.length} gewählt`} />
+          )}
+        </Stack>
+      </AccordionSummary>
+      <AccordionDetails id={`${id}-content`}>
+        <FormGroup sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(4, 1fr)" } }}>
+          {options.map((o) => (
+            <FormControlLabel
+              key={o.value}
+              label={o.label}
+              control={
+                <Checkbox
+                  size="small"
+                  color="secondary"
+                  checked={selected.includes(o.value)}
+                  onChange={() =>
+                    onChange(
+                      selected.includes(o.value)
+                        ? selected.filter((v) => v !== o.value)
+                        : [...selected, o.value],
+                    )
+                  }
+                />
+              }
+            />
+          ))}
+        </FormGroup>
+        <FormLabel sx={{ display: "block", mt: 1.5, fontSize: 12 }}>{hint}</FormLabel>
+      </AccordionDetails>
+    </Accordion>
   );
 }
 
@@ -216,6 +283,24 @@ export function FilterPanel({
           />
         </Grid>
       </Grid>
+
+      <AufklappGruppe
+        id="zustand"
+        title="Zustand"
+        options={ZUSTAND}
+        selected={filter.zustand}
+        onChange={(v) => set("zustand", v)}
+        hint="Es werden Objekte angezeigt, die einen der gewählten Zustände haben."
+      />
+
+      <AufklappGruppe
+        id="ausstattung"
+        title="Ausstattung"
+        options={AUSSTATTUNG}
+        selected={filter.ausstattung}
+        onChange={(v) => set("ausstattung", v)}
+        hint="Es werden nur Objekte angezeigt, die alle gewählten Merkmale haben."
+      />
     </Stack>
   );
 }

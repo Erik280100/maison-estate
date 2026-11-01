@@ -10,6 +10,11 @@ import CardContent from "@mui/material/CardContent";
 import Chip from "@mui/material/Chip";
 import Collapse from "@mui/material/Collapse";
 import FormControl from "@mui/material/FormControl";
+import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
+import TextField from "@mui/material/TextField";
+import ClearRounded from "@mui/icons-material/ClearRounded";
+import SearchRounded from "@mui/icons-material/SearchRounded";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
@@ -33,7 +38,15 @@ const statusColor: Record<ObjektStatus, "success" | "warning" | "default"> = {
 };
 
 function ObjektZeile({ o }: { o: Objekt }) {
-  const tags = [LABELS[o.objekttyp], ...o.freiflaechen.map((x) => LABELS[x]), ...o.parken.map((x) => LABELS[x])];
+  const alle = [
+    LABELS[o.objekttyp],
+    ...(o.zustand ? [LABELS[o.zustand]] : []),
+    ...o.freiflaechen.map((x) => LABELS[x]),
+    ...o.parken.map((x) => LABELS[x]),
+    ...o.ausstattung.map((x) => LABELS[x]),
+  ];
+  const MAX = 7;
+  const tags = alle.length > MAX ? [...alle.slice(0, MAX), `+${alle.length - MAX}`] : alle;
   return (
     <Card sx={{ "&:hover": { boxShadow: 6, borderColor: "secondary.main" } }}>
       <LinkCardActionArea href={`/intern/objekte/detail/?id=${o.id}`}>
@@ -142,7 +155,39 @@ export function ObjekteSuche() {
         </Alert>
       )}
 
-      <Card component="section" aria-label="Filter" sx={{ mt: 4, p: { xs: 2, sm: 3 } }}>
+      <TextField
+        fullWidth
+        type="search"
+        size="medium"
+        label="Stichwortsuche"
+        placeholder="Alles durchsuchen: Titel, Ort, PLZ, Preis, Fläche, Ausstattung … (z. B. 23 oder Wien Terrasse)"
+        value={filter.suche}
+        onChange={(e) => setFilter({ ...filter, suche: e.target.value })}
+        sx={{ mt: 4, "& .MuiOutlinedInput-root": { bgcolor: "background.paper" } }}
+        slotProps={{
+          inputLabel: { shrink: true },
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchRounded />
+              </InputAdornment>
+            ),
+            endAdornment: filter.suche ? (
+              <InputAdornment position="end">
+                <IconButton
+                  size="small"
+                  aria-label="Suche leeren"
+                  onClick={() => setFilter({ ...filter, suche: "" })}
+                >
+                  <ClearRounded fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ) : undefined,
+          },
+        }}
+      />
+
+      <Card component="section" aria-label="Filter" sx={{ mt: 2, p: { xs: 2, sm: 3 } }}>
         <Stack
           direction="row"
           sx={{ alignItems: "center", justifyContent: "space-between", mb: showFilter ? 3 : 0 }}

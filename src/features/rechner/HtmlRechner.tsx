@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
-import { getSupabase } from "@/lib/supabase";
+import { authConfigured, getSupabase } from "@/lib/supabase";
 
 /**
  * Lädt einen eigenständigen HTML-Rechner aus dem privaten Supabase-Bucket
@@ -21,10 +21,7 @@ export function HtmlRechner({ file, title }: { file: string; title: string }) {
   useEffect(() => {
     let cancelled = false;
     const supabase = getSupabase();
-    if (!supabase) {
-      setError("Supabase ist nicht konfiguriert.");
-      return;
-    }
+    if (!supabase) return; // Fehlermeldung wird unten abgeleitet, kein setState im Effekt
     supabase.storage
       .from("rechner")
       .download(file)
@@ -60,6 +57,7 @@ export function HtmlRechner({ file, title }: { file: string; title: string }) {
 
   useEffect(() => () => observer.current?.disconnect(), []);
 
+  if (!authConfigured) return <Alert severity="error">Supabase ist nicht konfiguriert.</Alert>;
   if (error) return <Alert severity="error">{error}</Alert>;
   if (html === null) return <CircularProgress aria-label="Rechner wird geladen" />;
 
