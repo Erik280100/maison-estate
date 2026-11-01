@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Renditerechner der Maison Estate GmbH für vermietete Wohnungen in Graz: Mietrendite, Finanzierung, Überschuss und Vermögensaufbau.">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body>
+<title>Maison Mietrechner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: wie Maison Margin Rechner – dunkelblaues Kopfband mit Goldtitel; links das Kalkulationsblatt, rechts das fixierte Ergebnis; darunter Vermögensaufbau, Stresstest, Hochrechnung, Sensitivität, Export und Objektliste */
+:root{
+  --navy:#13203F; --gold:#C4A56A; --gold-d:#9C7F45;
+  --bg:#F5F6F9; --paper:#FFFFFF; --ink:#13203F; --muted:#5C6478; --line:#DCE0E8; --field:#F8F9FB;
+  --accent:#9C7F45; --accent-soft:#F3EEE3;
+  --good:#1D7A4E; --good-bg:#E3F2EA; --warn:#94680A; --warn-bg:#FAF0D6; --bad:#B23A30; --bad-bg:#F8E2DF;
+  --c-wert:#9C7F45; --c-schuld:#7F8DB0; --grid:#E6E9F0;
+  --band-field:#1C2B50; --band-line:#33446E; --band-text:#C9CEDB;
+  --f-display:"Cinzel","Trajan Pro",Georgia,serif;
+  --f-body:"Manrope","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0C1428; --paper:#14203B; --ink:#E8EAF1; --muted:#9AA3BA; --line:#26344F; --field:#0F1930;
+  --accent:#C4A56A; --accent-soft:#232C3F;
+  --good:#5ECB94; --good-bg:#14302A; --warn:#E5B955; --warn-bg:#352B14; --bad:#EE8B80; --bad-bg:#3A1D1C;
+  --c-wert:#C4A56A; --c-schuld:#8796BD; --grid:#1E2B47; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C1428; --paper:#14203B; --ink:#E8EAF1; --muted:#9AA3BA; --line:#26344F; --field:#0F1930;
+  --accent:#C4A56A; --accent-soft:#232C3F;
+  --good:#5ECB94; --good-bg:#14302A; --warn:#E5B955; --warn-bg:#352B14; --bad:#EE8B80; --bad-bg:#3A1D1C;
+  --c-wert:#C4A56A; --c-schuld:#8796BD; --grid:#1E2B47; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.band{background:var(--navy);color:#fff}
+.band .in{max-width:1220px;margin:0 auto;padding-block:26px 22px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+h1{font-family:var(--f-display);font-weight:600;color:var(--gold);font-size:clamp(26px,4.2vw,38px);letter-spacing:.06em;margin:4px 0 0;text-wrap:balance}
+.band p{margin:4px 0 0;color:var(--band-text);font-size:14px;max-width:60ch}
+.objbox{display:grid;grid-template-columns:repeat(3,minmax(0,auto));gap:8px;align-items:end}
+@media (max-width:700px){.objbox{grid-template-columns:minmax(0,1fr)}}
+.objbox label{display:grid;gap:3px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.objbox input,.objbox select{background:var(--band-field);border:1px solid var(--band-line);color:#fff;border-radius:4px;padding:7px 9px;font:inherit;font-size:14px;min-width:0;width:100%;text-align:left}
+.wrap{max-width:1220px;margin:0 auto;padding-block:22px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.topline{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin:0 0 16px}
+.note{font-size:13px;color:var(--muted);margin:0;max-width:80ch}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:22px;align-items:start}
+@media (max-width:960px){.grid{grid-template-columns:minmax(0,1fr)}}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:640px){.form{grid-template-columns:minmax(0,1fr)}}
+.full{grid-column:1/-1}
+fieldset{background:var(--paper);border:1px solid var(--line);border-radius:6px;margin:0;padding:14px 16px 16px;display:grid;gap:9px;min-width:0;align-content:start}
+legend{font-family:var(--f-display);font-weight:600;font-size:13.5px;letter-spacing:.08em;color:var(--accent);padding:0 6px;margin-left:-6px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 130px;align-items:center;gap:10px}
+.row label{font-size:14px}
+.row small,.check small{display:block;color:var(--muted);font-size:12px;line-height:1.3}
+.inp{position:relative}
+input[type=number],input[type=text],select{width:100%;font:inherit;font-size:14px;font-variant-numeric:tabular-nums;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:4px;padding:7px 46px 7px 9px;text-align:right;min-width:0}
+input[type=text]{text-align:left;padding-right:9px}
+select{padding-right:9px;text-align:left}
+.unit{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none}
+input:focus-visible,select:focus-visible,button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.derived{font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:10px;border-top:1px dashed var(--line);padding-top:8px;font-variant-numeric:tabular-nums}
+.derived b{color:var(--ink);font-weight:600;text-align:right}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:14px}
+.check input{margin-top:4px;accent-color:var(--gold-d)}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:5px;overflow:hidden;background:var(--field);justify-self:start}
+.seg button{font:inherit;font-size:13px;font-weight:600;border:0;background:none;color:var(--muted);padding:7px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--navy);color:var(--gold)}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{background:var(--gold);color:var(--navy)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{background:var(--gold);color:var(--navy)}}
+.info{font-size:13px;color:var(--muted);margin:0}
+.only-voll,.only-frei{display:contents}
+body.kunde .intern{display:none!important}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+thead th{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+tr:last-child td{border-bottom:none}
+tr.total td{font-weight:700;border-top:2px solid var(--ink)}
+td.neg{color:var(--bad)}
+tr.exit td{background:var(--accent-soft);font-weight:600}
+td.good{color:var(--good)}td.warn{color:var(--warn)}td.bad{color:var(--bad)}
+.btn{font:inherit;font-size:13px;font-weight:600;border-radius:4px;padding:7px 12px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--navy);color:var(--gold);border-color:var(--navy)}
+:root[data-theme="dark"] .btn.primary{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary{background:var(--gold);color:var(--navy);border-color:var(--gold)}}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.panel{position:sticky;top:calc(env(safe-area-inset-top,0px) + 14px);background:var(--paper);border:1px solid var(--line);border-top:3px solid var(--gold);border-radius:6px;padding:18px;display:grid;gap:15px}
+@media (max-width:960px){.panel{position:static}}
+.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.big{font-family:var(--f-display);font-weight:700;font-size:44px;line-height:1;font-variant-numeric:tabular-nums}
+.chip{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.chip.good{background:var(--good-bg);color:var(--good)}.chip.warn{background:var(--warn-bg);color:var(--warn)}.chip.bad{background:var(--bad-bg);color:var(--bad)}
+.kv{display:grid;gap:6px}
+.kv div{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.kv span:last-child{font-variant-numeric:tabular-nums;text-align:right}
+.kv .sep{border-top:1px solid var(--line);padding-top:6px}
+.hint{font-size:13px;color:var(--muted);background:var(--accent-soft);border-radius:4px;padding:10px 12px}
+.hint b{color:var(--ink)}
+.checks{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.checks li{font-size:13px;line-height:1.35;padding:6px 9px;border-radius:4px;border-left:3px solid var(--line);background:var(--field);color:var(--ink)}
+.checks li.warn{border-left-color:var(--warn)}.checks li.bad{border-left-color:var(--bad)}.checks li.good{border-left-color:var(--good)}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.tile{border:1px solid var(--line);border-radius:5px;padding:8px 10px;min-width:0}
+.tile small{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tile b{font-size:17px;font-variant-numeric:tabular-nums}
+section{margin-top:30px}
+h2{font-family:var(--f-display);font-weight:600;font-size:20px;letter-spacing:.04em;margin:0 0 4px;text-wrap:balance}
+.sub{color:var(--muted);font-size:14px;margin:0 0 12px;max-width:72ch}
+.chart{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:12px 12px 6px;overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:520px;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:5px 14px;font-size:12.5px;color:var(--muted);margin:2px 4px 8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend em{width:16px;height:3px;border-radius:2px;display:inline-block}
+.legend em.area{height:10px;opacity:.25}
+.sens td,.sens th{text-align:center;padding:7px 9px}
+.sens td{font-size:13px}
+.sens td.good{background:var(--good-bg);color:var(--good)}.sens td.warn{background:var(--warn-bg);color:var(--warn)}.sens td.bad{background:var(--bad-bg);color:var(--bad)}
+.sens td.cur{outline:2px solid var(--ink);outline-offset:-2px;font-weight:700}
+.sens th.rh{text-align:left;color:var(--ink);text-transform:none;letter-spacing:0;font-size:13px}
+.pill{font-size:11.5px;font-weight:600;border-radius:999px;padding:2px 8px;background:var(--accent-soft);color:var(--accent)}
+.msg{font-size:13px;color:var(--muted)}
+.empty{padding:16px;color:var(--muted);font-size:14px;white-space:normal}
+textarea{width:100%;min-height:170px;font:13px/1.5 var(--f-body);background:var(--field);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:8px}
+footer{margin-top:30px;font-size:12.5px;color:var(--muted);max-width:90ch}
+@media print{.band{-webkit-print-color-adjust:exact;print-color-adjust:exact}.btns,.topline .seg,#exportBox,#listSec{display:none!important}.panel{position:static}.grid{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="band"><div class="in">
+  <div>
+    <div class="eyebrow" id="eyebrow">Maison Estate GmbH · Bestandskalkulation</div>
+    <h1>Maison Mietrechner</h1>
+    <p id="lead">Vermietung nach MRG und Mietenpaket 2026: Mietrendite, Cashflow, Bankfähigkeit, Stresstest und Exit über die Haltedauer.</p>
+  </div>
+  <div class="objbox">
+    <label for="name">Objekt<input type="text" id="name" data-k="name"></label>
+    <label for="adresse">Adresse<input type="text" id="adresse" data-k="adresse"></label>
+    <label for="status" class="intern">Status<select id="status" data-k="status">
+      <option>In Prüfung</option><option>Angebot gelegt</option><option>Gekauft</option><option>Vermietet</option><option>Im Verkauf</option><option>Abgelehnt</option></select></label>
+  </div>
+</div></div>
+
+<div class="wrap">
+<div class="topline">
+  <p class="note" id="note">Vorbelegt mit Beispielwerten für eine 60-m²-Wohnung in Graz. Alle Kosten netto: Wohnraumvermietung ist mit 10 % USt steuerpflichtig, die Vorsteuer ist abziehbar.</p>
+  <div class="seg" role="group" aria-label="Ansicht" id="viewSeg">
+    <button type="button" id="v-intern" aria-pressed="true">Interne Kalkulation</button>
+    <button type="button" id="v-kunde" aria-pressed="false">Kundenansicht</button>
+  </div>
+</div>
+<div class="grid">
+<div class="form" id="form">
+
+  <fieldset>
+    <legend>Ankauf &amp; Investition</legend>
+    <div class="row"><label for="A">Nutzfläche</label><div class="inp"><input type="number" id="A" data-k="A" step="1" min="1"><span class="unit">m²</span></div></div>
+    <div class="row intern"><label for="kaufM2">Unser Einkaufspreis pro m²</label><div class="inp"><input type="number" id="kaufM2" data-k="kaufM2" step="50" min="0"><span class="unit">€</span></div></div>
+    <div class="row kunde-only" hidden><label for="mwK">Kaufpreis pro m²<small>Angebotspreis an den Käufer</small></label><div class="inp"><input type="number" id="mwK" data-k="mw" step="50" min="0"><span class="unit">€</span></div></div>
+    <div class="row"><label for="grest">Grunderwerbsteuer</label><div class="inp"><input type="number" id="grest" data-k="grest" step="0.1" min="0"><span class="unit">%</span></div></div>
+    <div class="row"><label for="eintr">Eintragung Eigentum</label><div class="inp"><input type="number" id="eintr" data-k="eintr" step="0.1" min="0"><span class="unit">%</span></div></div>
+    <div class="row"><label for="notar">Notar / Treuhand</label><div class="inp"><input type="number" id="notar" data-k="notar" step="0.1" min="0"><span class="unit">%</span></div></div>
+    <label class="check"><input type="checkbox" id="maklerOn" data-k="maklerOn"> <span>Maklerprovision beim Kauf<small>3 % zzgl. USt üblich</small></span></label>
+    <div class="row"><label for="makler">Maklerprovision</label><div class="inp"><input type="number" id="makler" data-k="makler" step="0.5" min="0"><span class="unit">%</span></div></div>
+    <div class="row intern"><label for="sanM2">Sanierung vor Vermietung<small>netto, aus dem Margin Rechner</small></label><div class="inp"><input type="number" id="sanM2" data-k="sanM2" step="25" min="0"><span class="unit">€/m²</span></div></div>
+    <div class="row intern"><label for="einr">Küche / Einrichtung</label><div class="inp"><input type="number" id="einr" data-k="einr" step="500" min="0"><span class="unit">€</span></div></div>
+    <div class="derived"><span>Kaufpreis · Nebenkosten</span><b id="d-kp">–</b></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Mietzins nach MRG</legend>
+    <div class="seg" role="group" aria-label="MRG-Anwendungsbereich">
+      <button type="button" id="m-voll" aria-pressed="false">Vollanwendung</button>
+      <button type="button" id="m-teil" aria-pressed="true">Teilanwendung</button>
+      <button type="button" id="m-aus" aria-pressed="false">Vollausnahme</button>
+    </div>
+    <p class="info" id="mrgInfo"></p>
+    <div class="only-voll" hidden>
+      <div class="row"><label for="rw">Richtwert Steiermark<small>ab 1.4.2026, Statistik Austria</small></label><div class="inp"><input type="number" id="rw" data-k="rw" step="0.01" min="0"><span class="unit">€/m²</span></div></div>
+      <div class="row"><label for="zu">Zuschläge<small>Lage, Lift, Balkon, Ausstattung</small></label><div class="inp"><input type="number" id="zu" data-k="zu" step="1" min="0"><span class="unit">%</span></div></div>
+      <div class="row"><label for="ab">Abschläge</label><div class="inp"><input type="number" id="ab" data-k="ab" step="1" min="0"><span class="unit">%</span></div></div>
+      <label class="check"><input type="checkbox" id="befr" data-k="befr"> <span>Befristeter Vertrag<small>25 % Befristungsabschlag</small></span></label>
+    </div>
+    <div class="only-frei">
+      <div class="row"><label for="miete">Hauptmietzins netto<small>frei vereinbar</small></label><div class="inp"><input type="number" id="miete" data-k="miete" step="0.25" min="0"><span class="unit">€/m²</span></div></div>
+    </div>
+    <div class="row"><label for="extra">Stellplatz, Keller u. Ä.</label><div class="inp"><input type="number" id="extra" data-k="extra" step="10" min="0"><span class="unit">€/M</span></div></div>
+    <div class="row"><label for="bk">Betriebskosten<small>umlegbar auf den Mieter</small></label><div class="inp"><input type="number" id="bk" data-k="bk" step="0.1" min="0"><span class="unit">€/m²</span></div></div>
+    <div class="derived"><span>Hauptmietzins · Mieter zahlt brutto</span><b id="d-hmz">–</b></div>
+    <div class="derived"><span>Angebotsmiete Graz (Median, brutto)</span><b id="d-markt">–</b></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Bewirtschaftung</legend>
+    <div class="row"><label for="leer">Leerstand / Mietausfall</label><div class="inp"><input type="number" id="leer" data-k="leer" step="1" min="0"><span class="unit">%</span></div></div>
+    <div class="row"><label for="verw">Mietverwaltung<small>Hausverwaltung</small></label><div class="inp"><input type="number" id="verw" data-k="verw" step="5" min="0"><span class="unit">€/M</span></div></div>
+    <div class="row"><label for="rl">Rücklage (Reparaturfonds)<small>Eigentümer trägt, nicht umlegbar</small></label><div class="inp"><input type="number" id="rl" data-k="rl" step="0.05" min="0"><span class="unit">€/m²·M</span></div></div>
+    <div class="row"><label for="inst">Instandhaltung Wohnung</label><div class="inp"><input type="number" id="inst" data-k="inst" step="1" min="0"><span class="unit">€/m²·J</span></div></div>
+    <div class="row"><label for="infl">Inflation (VPI) p.a.<small>für Wertsicherung und Kosten</small></label><div class="inp"><input type="number" id="infl" data-k="infl" step="0.1" min="0"><span class="unit">%</span></div></div>
+    <div class="derived"><span>Mietanpassung p.a. nach MieWeG</span><b id="d-wert">–</b></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Mieterwechsel &amp; Zahlungsverzug</legend>
+    <div class="row"><label for="wJ">Mieterwechsel alle<small>Befristung mind. 5 J. bei Unternehmern</small></label><div class="inp"><input type="number" id="wJ" data-k="wJ" step="1" min="0"><span class="unit">J.</span></div></div>
+    <div class="row"><label for="wMM">Maklerprovision Neuvermietung<small>Bestellerprinzip: Vermieter zahlt</small></label><div class="inp"><input type="number" id="wMM" data-k="wMM" step="0.5" min="0"><span class="unit">BMM</span></div></div>
+    <div class="row"><label for="wRen">Ausmalen, Reparaturen je Wechsel</label><div class="inp"><input type="number" id="wRen" data-k="wRen" step="250" min="0"><span class="unit">€</span></div></div>
+    <div class="row"><label for="rueck">Verspätet bezahlte Miete<small>Anteil der Jahresmiete im Rückstand</small></label><div class="inp"><input type="number" id="rueck" data-k="rueck" step="1" min="0"><span class="unit">%</span></div></div>
+    <div class="row"><label for="verzD">Ø Verzugsdauer</label><div class="inp"><input type="number" id="verzD" data-k="verzD" step="0.5" min="0"><span class="unit">Mon.</span></div></div>
+    <div class="row"><label for="verzZ">Verzugszinsen<small>gesetzlich 4 % p.a., § 1000 ABGB</small></label><div class="inp"><input type="number" id="verzZ" data-k="verzZ" step="0.1" min="0"><span class="unit">%</span></div></div>
+    <div class="derived"><span>Wechselkosten p.a. · Verzug netto p.a.</span><b id="d-verz">–</b></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Finanzierung</legend>
+    <div class="row"><label for="fk">Fremdfinanzierung<small>Anteil der Gesamtinvestition</small></label><div class="inp"><input type="number" id="fk" data-k="fk" step="5" min="0" max="100"><span class="unit">%</span></div></div>
+    <div class="row"><label for="zins">Sollzins p.a.</label><div class="inp"><input type="number" id="zins" data-k="zins" step="0.1" min="0"><span class="unit">%</span></div></div>
+    <div class="row"><label for="zinsFix">Fixzinsphase<small>0 = Zins gilt durchgehend</small></label><div class="inp"><input type="number" id="zinsFix" data-k="zinsFix" step="1" min="0"><span class="unit">J.</span></div></div>
+    <div class="row"><label for="zins2">Zins danach (Annahme)</label><div class="inp"><input type="number" id="zins2" data-k="zins2" step="0.1" min="0"><span class="unit">%</span></div></div>
+    <div class="row"><label for="lz">Laufzeit</label><div class="inp"><input type="number" id="lz" data-k="lz" step="1" min="1"><span class="unit">J.</span></div></div>
+    <div class="row"><label for="tf">Tilgungsfreie Zeit<small>nur Zinsen, danach Annuität</small></label><div class="inp"><input type="number" id="tf" data-k="tf" step="1" min="0"><span class="unit">J.</span></div></div>
+    <div class="row"><label for="sond">Sondertilgung pro Jahr</label><div class="inp"><input type="number" id="sond" data-k="sond" step="500" min="0"><span class="unit">€</span></div></div>
+    <div class="row"><label for="bearb">Bearbeitungsgebühr Bank</label><div class="inp"><input type="number" id="bearb" data-k="bearb" step="0.1" min="0"><span class="unit">%</span></div></div>
+    <div class="row"><label for="pfand">Eintragung Pfandrecht</label><div class="inp"><input type="number" id="pfand" data-k="pfand" step="0.1" min="0"><span class="unit">%</span></div></div>
+    <div class="row"><label for="dscrZiel">Mindest-DSCR der Bank<small>Mietertrag ÷ Kreditrate</small></label><div class="inp"><input type="number" id="dscrZiel" data-k="dscrZiel" step="0.05" min="0"><span class="unit">×</span></div></div>
+    <div class="derived"><span>Kredit · Rate</span><b id="d-kredit">–</b></div>
+  </fieldset>
+
+  <fieldset class="intern">
+    <legend>Steuer (GmbH)</legend>
+    <div class="row"><label for="geb">Gebäudeanteil<small>Grundanteil-VO, Graz meist 60–70 %</small></label><div class="inp"><input type="number" id="geb" data-k="geb" step="5" min="0" max="100"><span class="unit">%</span></div></div>
+    <div class="row"><label for="afa">AfA Wohngebäude</label><div class="inp"><input type="number" id="afa" data-k="afa" step="0.1" min="0"><span class="unit">%</span></div></div>
+    <label class="check"><input type="checkbox" id="beschl" data-k="beschl"> <span>Beschleunigte AfA<small>Jahr 1 dreifach, Jahr 2 doppelt</small></span></label>
+    <div class="row"><label for="koest">Körperschaftsteuer</label><div class="inp"><input type="number" id="koest" data-k="koest" step="1" min="0"><span class="unit">%</span></div></div>
+    <label class="check"><input type="checkbox" id="verlust" data-k="verlust"> <span>Verluste mit Flip-Gewinnen verrechnen<small>Steuerersparnis in der GmbH</small></span></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Haltedauer &amp; Wertentwicklung</legend>
+    <div class="row"><label for="H">Haltedauer</label><div class="inp"><input type="number" id="H" data-k="H" step="1" min="1" max="30"><span class="unit">J.</span></div></div>
+    <div class="row intern"><label for="mw">Marktwert nach Sanierung<small>= Kaufpreis in der Kundenansicht</small></label><div class="inp"><input type="number" id="mw" data-k="mw" step="50" min="0"><span class="unit">€/m²</span></div></div>
+    <div class="row"><label for="wert">Wertsteigerung p.a.</label><div class="inp"><input type="number" id="wert" data-k="wert" step="0.1"><span class="unit">%</span></div></div>
+    <div class="row"><label for="vkk">Verkaufskosten am Ende</label><div class="inp"><input type="number" id="vkk" data-k="vkk" step="0.5" min="0"><span class="unit">%</span></div></div>
+    <div class="row intern"><label for="ziel">Ziel-Nettomietrendite</label><div class="inp"><input type="number" id="ziel" data-k="ziel" step="0.1" min="0"><span class="unit">%</span></div></div>
+    <div class="derived"><span>Wert am Ende · Eigenkapital im Objekt</span><b id="d-exit">–</b></div>
+  </fieldset>
+
+  <div class="full btns intern">
+    <button type="button" class="btn primary" id="save" disabled>Objekt speichern</button>
+    <button type="button" class="btn" id="saveNew" disabled>Als neues Objekt</button>
+    <button type="button" class="btn" id="reset">Beispielwerte</button>
+    <span class="msg" id="saveMsg">Objektliste wird geladen …</span>
+  </div>
+</div>
+
+<aside class="panel" aria-live="polite">
+  <div>
+    <div class="eyebrow" style="color:var(--muted)">Nettomietrendite</div>
+    <div class="hero"><div class="big" id="r-net">–</div><span class="chip" id="r-chip">–</span></div>
+  </div>
+  <div class="tiles">
+    <div class="tile"><small id="l-cf">Cashflow / Monat</small><b id="r-cf">–</b></div>
+    <div class="tile"><small>DSCR</small><b id="r-dscr">–</b></div>
+    <div class="tile"><small>EK-Rendite J1</small><b id="r-coc">–</b></div>
+    <div class="tile"><small>EK-IRR inkl. Exit</small><b id="r-irr">–</b></div>
+  </div>
+  <div class="kv">
+    <div><span>Gesamtinvestition</span><span id="r-inv">–</span></div>
+    <div><span>Eigenkapital</span><span id="r-ek">–</span></div>
+    <div class="sep"><span>Jahresnettomiete (Soll)</span><span id="r-miete">–</span></div>
+    <div><span>Mietertrag nach Kosten</span><span id="r-noi">–</span></div>
+    <div><span>Bruttomietrendite auf Kaufpreis</span><span id="r-brutto">–</span></div>
+    <div><span>Kaufpreisfaktor</span><span id="r-faktor">–</span></div>
+    <div class="sep"><span>Kreditrate p.a.</span><span id="r-ann">–</span></div>
+    <div class="intern"><span>KöSt Jahr 1</span><span id="r-st">–</span></div>
+    <div><span id="l-cfj">Cashflow nach Steuer p.a.</span><span id="r-cfj">–</span></div>
+  </div>
+  <div class="hint" id="r-hint"></div>
+  <ul class="checks" id="r-checks"></ul>
+</aside>
+</div>
+
+<section>
+  <h2>Vermögensaufbau</h2>
+  <p class="sub">Objektwert mit der angenommenen Wertsteigerung gegen die Restschuld. Die Fläche dazwischen ist das Eigenkapital, das im Objekt steckt – die Mieter tilgen den Kredit mit.</p>
+  <div class="chart">
+    <div class="legend"><span><em style="background:var(--c-wert)"></em>Objektwert</span><span><em style="background:var(--c-schuld)"></em>Restschuld</span><span><em class="area" style="background:var(--c-wert)"></em>Eigenkapital im Objekt</span></div>
+    <svg id="chart" viewBox="0 0 760 280" role="img" aria-label="Objektwert und Restschuld über die Haltedauer"></svg>
+  </div>
+</section>
+
+<section>
+  <h2>Stresstest</h2>
+  <p class="sub">So reagiert das Objekt auf schlechtere Bedingungen. Banken fragen das im Businessplan ab. Grün hält die Zielwerte, gelb deckt die Rate knapp, rot deckt sie nicht.</p>
+  <div class="tbl-wrap"><table><thead><tr><th>Szenario</th><th>Nettorendite</th><th>DSCR</th><th id="st-cfh">Cashflow/M</th><th>EK-IRR</th></tr></thead><tbody id="stress"></tbody></table></div>
+</section>
+
+<section>
+  <h2>Hochrechnung über die Haltedauer</h2>
+  <p class="sub">Miete steigt jährlich nach der Wertsicherung, Kosten mit der Inflation. Der Kredit läuft monatlich mit tilgungsfreier Zeit, Fixzinsphase und Sondertilgung. Letzte Zeile: Verkauf nach Restschuld und Steuer.</p>
+  <div class="tbl-wrap"><table><thead><tr><th>Jahr</th><th>Miete eff.</th><th>Kosten</th><th>Ertrag</th><th>Zinsen</th><th>Tilgung</th><th class="intern">AfA</th><th class="intern">KöSt</th><th>Cashflow</th><th>Restschuld</th></tr></thead><tbody id="proj"></tbody></table></div>
+</section>
+
+<section>
+  <h2>Sensitivität: Kaufpreis gegen Miete</h2>
+  <p class="sub">Nettomietrendite bei anderem Kaufpreis und anderem Hauptmietzins, alles andere bleibt gleich. Grün erreicht die Zielrendite und deckt die Rate, gelb liegt darunter, rot deckt die Rate nicht. Umrandet ist die aktuelle Rechnung.</p>
+  <div class="tbl-wrap"><table class="sens" id="sens"></table></div>
+</section>
+
+<section id="exportBox">
+  <h2>Export &amp; Exposé</h2>
+  <p class="sub" id="exportSub">Objektakte und Excel enthalten die volle interne Kalkulation. Das Exposé rechnet aus Käufersicht: Kaufpreis = Marktwert nach Sanierung, vor Steuern, ohne eure Einkaufsdaten.</p>
+  <div class="btns">
+    <button type="button" class="btn primary" id="xExcel">Excel exportieren</button>
+    <button type="button" class="btn intern" id="xPdf">PDF Objektakte</button>
+    <button type="button" class="btn" id="xExpose">PDF Exposé für Kunden</button>
+    <button type="button" class="btn" id="xText">Exposé-Text kopieren</button>
+    <button type="button" class="btn" id="xPrint" hidden>Drucken</button>
+    <span class="msg" id="xMsg"></span>
+  </div>
+  <textarea id="xTextArea" readonly hidden aria-label="Exposé-Text" style="margin-top:10px"></textarea>
+</section>
+
+<section id="listSec" class="intern">
+  <h2>Mietobjekte</h2>
+  <p class="sub" id="listSub">Gespeicherte Bestandskalkulationen, für alle mit Zugriff auf diese Seite sichtbar. Laden übernimmt alle Werte ins Blatt.</p>
+  <div class="tbl-wrap"><table><thead><tr><th>Objekt</th><th>Status</th><th>Fläche</th><th>Kaufpreis</th><th>Miete</th><th>Netto­rendite</th><th>Cashflow/M</th><th>Gespeichert</th><th></th></tr></thead><tbody id="objs"><tr><td colspan="9" class="empty">Noch keine Mietobjekte gespeichert. Füllt das Blatt aus und tippt auf „Objekt speichern“.</td></tr></tbody></table></div>
+</section>
+
+<footer id="foot">
+  Nettomietrendite = Mietertrag nach Leerstand, Verzug, Mieterwechsel und nicht umlegbaren Kosten ÷ Gesamtinvestition. DSCR = Mietertrag ÷ Kreditrate (nach der tilgungsfreien Zeit). Richtwert Steiermark 9,30 €/m² ab 1.4.2026; Wertsicherung nach Mieten-Wertsicherungsgesetz vereinfacht als ganzjährige Anpassung (in Voll- und Teilanwendung zählt Inflation über 3 % nur zur Hälfte, 2027 in der Vollanwendung höchstens 2 %). Befristungen im MRG-Bereich durch Unternehmer mindestens 5 Jahre. Maklerprovision bei Neuvermietung in Bruttomonatsmieten (Hauptmietzins + Betriebskosten). Angebotsmiete Graz 15,15 €/m² brutto (ImmoScout24, Mai 2026). Beispielrechnung mit Annahmen, keine Zusicherung von Ertrag oder Wertentwicklung und keine Rechts-, Steuer- oder Finanzierungsberatung.
+</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script id="calc">
+function annuityM(K,i,n){if(K<=0)return 0;n=Math.max(n,1);return i>0?K*i/(1-Math.pow(1+i,-n)):K/n}
+function hmzOf(S){if(S.mrg==="voll"){return (+S.rw||0)*(1+((+S.zu||0)-(+S.ab||0))/100)*(S.befr?0.75:1)}return +S.miete||0}
+function growth(S,year){const inf=(+S.infl||0)/100;if(S.mrg==="aus")return inf;let g=inf<=0.03?inf:0.03+(inf-0.03)/2;if(S.mrg==="voll"&&year===2027)g=Math.min(g,0.02);return g}
+/* Käufersicht: Kaufpreis = Marktwert, keine Sanierung, keine GmbH-Steuer */
+function kundeS(S){return Object.assign({},S,{kaufM2:+S.mw||0,sanM2:0,einr:0,koest:0,verlust:false,beschl:false})}
+function calc(S,o){
+  o=o||{};const pc=v=>(+v||0)/100,A=Math.max(+S.A||0,0.0001);
+  const kp=(o.kpM2!==undefined?o.kpM2:(+S.kaufM2||0))*A;
+  const nkR=pc(S.grest)+pc(S.eintr)+pc(S.notar)+(S.maklerOn?pc(S.makler):0),nk=kp*nkR;
+  const san=(+S.sanM2||0)*A+(+S.einr||0);
+  const fk=pc(S.fk),fin=pc(S.pfand)+pc(S.bearb);
+  const basis=kp+nk+san,kredit=fk*basis,finK=kredit*fin,inv=basis+finK,ek=inv-kredit;
+  const hmz=o.hmz!==undefined?o.hmz:hmzOf(S);
+  const mieteJ=hmz*A*12+(+S.extra||0)*12,leer=pc(S.leer),bk=+S.bk||0;
+  const verzF=pc(S.rueck)*(pc(S.verzZ)-pc(S.zins))*(+S.verzD||0)/12,vf=1+verzF;
+  const wJ=+S.wJ||0,wMM=+S.wMM||0;
+  const kH=wJ>0?wMM*A/wJ:0; /* Maklerkosten hängen am Hauptmietzins */
+  const kostenFix=(+S.verw||0)*12+(+S.rl||0)*A*12+(+S.inst||0)*A+leer*bk*A*12+(wJ>0?(wMM*bk*A+(+S.wRen||0))/wJ:0);
+  const kostenJ=kostenFix+kH*hmz;
+  const verzJ=mieteJ*(1-leer)*verzF;
+  const noi=mieteJ*(1-leer)*vf-kostenJ;
+  const lz=Math.max(+S.lz||1,1),tf=Math.min(Math.max(Math.round(+S.tf||0),0),lz-1);
+  const i1=pc(S.zins)/12,F=Math.round((+S.zinsFix||0)*12),i2=F>0?pc(S.zins2)/12:i1;
+  const annM=annuityM(kredit,i1,(lz-tf)*12),annJ=annM*12;
+  const H=Math.min(Math.max(Math.round(+S.H||1),1),30),inf=pc(S.infl),nMon=lz*12,sond=+S.sond||0;
+  const afaBase=(kp+nk)*pc(S.geb)+san,grundAnt=(kp+nk)*(1-pc(S.geb)),afaR=pc(S.afa),kst=pc(S.koest),finJ=finK/lz;
+  let bal=kredit,mf=1,cf0=1,cumAfa=0,mon=0,R=annM,rows=[],flows=[-ek];
+  for(let t=1;t<=H;t++){
+    if(t>1){mf*=1+growth(S,2026+t);cf0*=1+inf}
+    const eff=mieteJ*(1-leer)*mf*vf,kost=kostenFix*cf0+kH*hmz*mf,ertrag=eff-kost;
+    let zinsJ=0,tilgJ=0,paid=0;
+    for(let m=0;m<12;m++){
+      mon++;if(bal<=0.005||mon>nMon)continue;
+      const i=(F>0&&mon>F)?i2:i1,z=bal*i;
+      if(mon<=tf*12){zinsJ+=z;paid+=z;continue}
+      if(mon===tf*12+1||(F>0&&mon===F+1&&mon>tf*12))R=annuityM(bal,i,nMon-mon+1);
+      const r=Math.min(R,bal+z);zinsJ+=z;tilgJ+=r-z;bal-=r-z;paid+=r;
+      if(sond>0&&mon%12===0&&bal>0){const s=Math.min(sond,bal);bal-=s;tilgJ+=s;paid+=s}
+    }
+    const mult=S.beschl?(t===1?3:t===2?2:1):1,afaJ=Math.min(afaBase*afaR*mult,Math.max(afaBase-cumAfa,0));cumAfa+=afaJ;
+    const fa=t<=lz?finJ:0,evs=ertrag-zinsJ-afaJ-fa,st=evs>0?evs*kst:(S.verlust?evs*kst:0);
+    const cf=ertrag-paid-st,wertT=(+S.mw||0)*A*Math.pow(1+pc(S.wert),t);
+    rows.push({t,eff,kost,ertrag,zinsJ,tilgJ,afaJ,st,cf,bal:Math.max(bal,0),paid,wertT});flows.push(cf);
+  }
+  const sale=(+S.mw||0)*A*Math.pow(1+pc(S.wert),H),vkk=sale*pc(S.vkk);
+  const buch=afaBase-cumAfa+grundAnt+Math.max(finK-finJ*Math.min(H,lz),0);
+  const gain=sale-vkk-buch,exTax=gain>0?gain*kst:(S.verlust?gain*kst:0);
+  const exNet=sale-vkk-Math.max(bal,0)-exTax;
+  flows[flows.length-1]+=exNet;
+  const r1=rows[0];
+  return{A,kp,nk,nkR,san,kredit,finK,inv,ek,hmz,mieteJ,kostenJ,kostenFix,kH,noi,verzJ,verzF,wechselJ:wJ>0?(wMM*(hmz+bk)*A+(+S.wRen||0))/wJ:0,tf,annM,annJ,rows,sale,vkk,buch,gain,exTax,exNet,H,
+    net:inv>0?noi/inv:0,brutto:kp>0?mieteJ/kp:0,faktor:mieteJ>0?kp/mieteJ:NaN,dscr:annJ>0?noi/annJ:Infinity,
+    cf1:r1.cf,cfM:r1.cf/12,cfPre1:r1.ertrag-r1.paid,st1:r1.st,coc:ek>0?r1.cf/ek:NaN,irr:irr(flows),flows};
+}
+function irr(f){const npv=r=>f.reduce((a,c,t)=>a+c/Math.pow(1+r,t),0);let lo=-0.99,hi=2;if(!(f[0]<0)||npv(lo)*npv(hi)>0)return NaN;for(let k=0;k<200;k++){const m=(lo+hi)/2;if(npv(lo)*npv(m)<=0)hi=m;else lo=m}return (lo+hi)/2}
+function limits(S){
+  const r=calc(S),pc=v=>(+v||0)/100,ziel=pc(S.ziel),f=1+pc(S.fk)*(pc(S.pfand)+pc(S.bearb));
+  const kmax=ziel>0?(r.noi/ziel-r.san*f)/((1+r.nkR)*f):NaN;
+  const vf=1+r.verzF,leer=pc(S.leer),fac=r.A*12*(1-leer)*vf-r.kH,base=(+S.extra||0)*12*(1-leer)*vf-r.kostenFix;
+  const need=n=>fac>0?(n-base)/fac:NaN;
+  return{kmax:kmax/r.A,hDscr:need((+S.dscrZiel||0)*r.annJ),hNull:need(r.annJ),hZiel:need(ziel*r.inv)};
+}
+function stress(S){
+  const sc=[["Basis",{}],["Zins +2 Prozentpunkte",{zins:(+S.zins||0)+2,zins2:(+S.zins2||0)+2}],["Leerstand 10 %",{leer:10}],["Miete −10 %",{hmzF:0.9}],["Kosten +25 %",{verw:(+S.verw||0)*1.25,rl:(+S.rl||0)*1.25,inst:(+S.inst||0)*1.25}],
+    ["Keine Wertsteigerung",{wert:0}],["Kombiniert: Zins +1, Leerstand 8 %, Miete −5 %",{zins:(+S.zins||0)+1,zins2:(+S.zins2||0)+1,leer:8,hmzF:0.95}]];
+  return sc.map(([n,o])=>{const S2=Object.assign({},S,o);delete S2.hmzF;const r=calc(S2,o.hmzF?{hmz:hmzOf(S)*o.hmzF}:{});return{n,r}});
+}
+</script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const eur=v=>isFinite(v)?(v<0?"−":"")+Math.round(Math.abs(v)).toLocaleString("de-AT")+" €":"–";
+const pct=(v,d=1)=>isFinite(v)?(v<0?"−":"")+Math.abs(v*100).toLocaleString("de-AT",{minimumFractionDigits:d,maximumFractionDigits:d})+" %":"–";
+const n0=v=>isFinite(v)?Math.round(v).toLocaleString("de-AT"):"–";
+const n2=v=>isFinite(v)?v.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2}):"–";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const MARKT=15.15;
+/* Läuft in Claude (Artefakt mit Speicher/Download) oder eigenständig auf der Website */
+const HOST=!!(window.claude&&typeof window.claude.use==="function");
+const DEFAULTS={name:"Beispiel 60 m² Graz – Bestand",adresse:"",status:"In Prüfung",A:60,kaufM2:2300,grest:3.5,eintr:1.1,notar:1.5,maklerOn:false,makler:3,sanM2:250,einr:0,
+  mrg:"teil",rw:9.30,zu:10,ab:0,befr:true,miete:11.5,extra:60,bk:2.6,
+  leer:3,verw:25,rl:1.0,inst:10,infl:2.5,wJ:5,wMM:2,wRen:1500,rueck:5,verzD:1,verzZ:4,
+  fk:60,zins:3.8,zinsFix:0,zins2:4.5,lz:30,tf:0,sond:0,bearb:1,pfand:1.2,dscrZiel:1.2,
+  geb:70,afa:1.5,beschl:true,koest:23,verlust:true,
+  H:10,mw:3300,wert:2.5,vkk:3,ziel:4};
+const clone=o=>JSON.parse(JSON.stringify(o));
+let S=clone(DEFAULTS),currentId=null;
+const KEY="maison-miet-draft-v2";
+try{const d=JSON.parse(localStorage.getItem(KEY)||"null");if(d&&d.S){S=Object.assign(clone(DEFAULTS),d.S);currentId=d.id||null}}catch(e){}
+let view=HOST?"intern":"kunde";
+const h=(location.hash||"").replace("#","");
+if(h==="kunde")view="kunde";if(h==="intern")view="intern";
+if(!HOST&&h!=="intern")$("viewSeg").hidden=true;
+const E=()=>view==="kunde"?kundeS(S):S;
+
+const INFO={voll:"Altbau mit Baubewilligung vor 1945 bzw. 1953 oder gefördert errichtet: Richtwertmietzins mit Zu- und Abschlägen.",
+  teil:"Frei finanzierter Neubau nach 1945 bzw. 1953, WE-Wohnung im Neubau: Mietzins frei vereinbar, aber Kündigungsschutz und Befristungsregeln.",
+  aus:"Ein- oder Zweiobjekthaus, Dienstwohnung u. Ä.: ABGB statt MRG, Wertsicherung frei vereinbar."};
+function toForm(){document.querySelectorAll("[data-k]").forEach(el=>{const k=el.dataset.k;if(!(k in S))return;if(el.type==="checkbox")el.checked=!!S[k];else if(document.activeElement!==el)el.value=S[k]});setModes()}
+function setModes(){["voll","teil","aus"].forEach(m=>$("m-"+m).setAttribute("aria-pressed",S.mrg===m));
+  const v=S.mrg==="voll";document.querySelectorAll(".only-voll").forEach(e=>e.hidden=!v);document.querySelectorAll(".only-frei").forEach(e=>e.hidden=v);$("mrgInfo").textContent=INFO[S.mrg];
+  const k=view==="kunde";document.body.classList.toggle("kunde",k);document.querySelectorAll(".kunde-only").forEach(e=>e.hidden=!k);
+  $("v-intern").setAttribute("aria-pressed",!k);$("v-kunde").setAttribute("aria-pressed",k);
+  $("eyebrow").textContent=k?"Maison Estate · Renditerechner":"Maison Estate GmbH · Bestandskalkulation";
+  $("lead").textContent=k?"Was eine vermietete Wohnung bringt: Mietrendite, monatlicher Überschuss, Finanzierung und Vermögensaufbau – mit allen Annahmen zum Selbsteinstellen.":"Vermietung nach MRG und Mietenpaket 2026: Mietrendite, Cashflow, Bankfähigkeit, Stresstest und Exit über die Haltedauer.";
+  $("note").textContent=k?"Beispielwerte für eine 60-m²-Wohnung in Graz. Alle Werte lassen sich anpassen; die Rechnung erfolgt vor Steuern.":"Vorbelegt mit Beispielwerten für eine 60-m²-Wohnung in Graz. Alle Kosten netto: Wohnraumvermietung ist mit 10 % USt steuerpflichtig, die Vorsteuer ist abziehbar.";
+  $("l-cf").textContent=k?"Überschuss / Monat":"Cashflow / Monat";$("l-cfj").textContent=k?"Überschuss vor Steuern p.a.":"Cashflow nach Steuer p.a.";$("st-cfh").textContent=k?"Überschuss/M":"Cashflow/M";
+  $("exportSub").textContent=k?"Die Rechnung als Excel oder PDF speichern oder als Text kopieren. Beispielrechnung, keine Zusicherung.":"Objektakte und Excel enthalten die volle interne Kalkulation. Das Exposé rechnet aus Käufersicht: Kaufpreis = Marktwert nach Sanierung, vor Steuern, ohne eure Einkaufsdaten.";
+}
+
+function chart(r){
+  const svg=$("chart"),W=760,Hh=280,L=62,Rr=16,T=14,B=34,rows=r.rows,N=rows.length;
+  const pts=[{t:0,w:(+E().mw||0)*r.A,b:r.kredit},...rows.map(x=>({t:x.t,w:x.wertT,b:x.bal}))];
+  const yMax0=Math.max(...pts.map(p=>Math.max(p.w,p.b)),1),raw=yMax0/4,mag=Math.pow(10,Math.floor(Math.log10(raw))),step=[1,2,2.5,5,10].map(s=>s*mag).find(s=>s>=raw),yMax=step*Math.ceil(yMax0/step);
+  const X=t=>L+(W-L-Rr)*t/Math.max(N,1),Y=v=>T+(Hh-T-B)*(1-v/yMax);
+  let g="";
+  for(let v=0;v<=yMax+1e-6;v+=step)g+=`<line x1="${L}" x2="${W-Rr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)" stroke-width="1"/><text x="${L-8}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${v>=1000?Math.round(v/1000).toLocaleString("de-AT")+" T":Math.round(v)}</text>`;
+  const ys=N>20?5:N>10?2:1;
+  for(let t=0;t<=N;t+=ys)g+=`<text x="${X(t)}" y="${Hh-B+18}" text-anchor="middle" font-size="11" fill="var(--muted)">${t}</text>`;
+  g+=`<text x="${W-Rr}" y="${Hh-4}" text-anchor="end" font-size="11" fill="var(--muted)">Jahre</text>`;
+  const pw=pts.map(p=>X(p.t).toFixed(1)+" "+Y(p.w).toFixed(1)),pb=pts.map(p=>X(p.t).toFixed(1)+" "+Y(p.b).toFixed(1));
+  g+=`<path d="M${pw.join(" L")} L${pb.slice().reverse().join(" L")} Z" fill="var(--c-wert)" fill-opacity=".14" stroke="none"/>`;
+  g+=`<path d="M${pb.join(" L")}" fill="none" stroke="var(--c-schuld)" stroke-width="2.4"/><path d="M${pw.join(" L")}" fill="none" stroke="var(--c-wert)" stroke-width="2.6"/>`;
+  const last=pts[pts.length-1],eq=last.w-last.b;
+  g+=`<circle cx="${X(last.t)}" cy="${Y(last.w)}" r="4" fill="var(--c-wert)"/><circle cx="${X(last.t)}" cy="${Y(last.b)}" r="4" fill="var(--c-schuld)"/>`;
+  g+=`<text x="${X(last.t)-8}" y="${(Y(last.w)+Y(last.b))/2+4}" text-anchor="end" font-size="12" font-weight="600" fill="var(--ink)">${eur(eq)} Eigenkapital</text>`;
+  svg.innerHTML=g;
+}
+
+function update(){
+  try{localStorage.setItem(KEY,JSON.stringify({S,id:currentId}))}catch(e){}
+  const SE=E(),r=calc(SE),L=limits(SE),ziel=(+S.ziel||0)/100,dz=+S.dscrZiel||0,k=view==="kunde";
+  $("d-kp").textContent=eur(r.kp)+" · "+eur(r.nk)+" ("+pct(r.nkR)+")";
+  const brM2=(r.hmz+(+S.bk||0))*1.1;
+  $("d-hmz").textContent=n2(r.hmz)+" €/m² · "+n2(brM2)+" €/m²";
+  const diff=brM2/MARKT-1;$("d-markt").textContent=n2(MARKT)+" €/m² · eure Miete "+(diff>=0?"+":"")+pct(diff,0);
+  $("d-markt").style.color=diff>0.1?"var(--warn)":"";
+  $("d-wert").textContent=pct(growth(S,2028),2)+(S.mrg==="voll"?" · 2027 max. 2 %":"");
+  $("d-kredit").textContent=eur(r.kredit)+" · "+eur(r.annM)+"/M"+(r.tf?" ab Jahr "+(r.tf+1):"");
+  $("d-verz").textContent=eur(r.wechselJ)+" · "+eur(r.verzJ);
+  const last=r.rows[r.rows.length-1];
+  $("d-exit").textContent=eur(r.sale)+" · "+eur(last.wertT-last.bal);
+
+  const okN=r.net>=ziel-1e-9,okD=r.dscr>=dz;
+  const cls=r.dscr<1?"bad":(k?okD:(okN&&okD))?"good":"warn";
+  $("r-net").textContent=pct(r.net,2);$("r-net").style.color=`var(--${k?(r.net>0?"ink":"bad"):okN?"good":r.net>0?"warn":"bad"})`;
+  const chip=$("r-chip");chip.className="chip "+cls;
+  chip.textContent=r.dscr<1?"Rate nicht gedeckt":cls==="good"?(k?"Rate gedeckt":"Ziel & Bank ok"):(!k&&!okN)?"unter "+pct(ziel,1):"DSCR unter "+n2(dz);
+  const cfShow=k?r.cfPre1/12:r.cfM;
+  $("r-cf").textContent=eur(cfShow);$("r-cf").style.color=cfShow<0?"var(--bad)":"var(--good)";
+  $("r-dscr").textContent=isFinite(r.dscr)?n2(r.dscr)+" ×":"kein Kredit";$("r-dscr").style.color=`var(--${r.dscr>=dz?"good":r.dscr>=1?"warn":"bad"})`;
+  $("r-coc").textContent=pct(r.coc);$("r-irr").textContent=pct(r.irr);
+  $("r-inv").textContent=eur(r.inv);$("r-ek").textContent=eur(r.ek)+" ("+pct(r.inv>0?r.ek/r.inv:0,0)+")";
+  $("r-miete").textContent=eur(r.mieteJ);$("r-noi").textContent=eur(r.noi);
+  $("r-brutto").textContent=pct(r.brutto,2);$("r-faktor").textContent=isFinite(r.faktor)?n2(r.faktor)+"-fach":"–";
+  $("r-ann").textContent=eur(r.annJ);$("r-st").textContent=eur(r.st1)+(r.st1<0?" Ersparnis":"");
+  $("r-cfj").innerHTML="<b>"+eur(k?r.cfPre1:r.cf1)+"</b>";
+  $("r-hint").innerHTML=(k?"":`Für ${pct(ziel,1)} Nettorendite höchstens <b>${isFinite(L.kmax)&&L.kmax>0?n0(L.kmax)+" €/m²":"–"}</b> zahlen. `)+
+    `Damit die Miete die Kreditrate deckt, braucht es mindestens <b>${n2(L.hNull)} €/m²</b> Hauptmietzins; für einen DSCR von ${n2(dz)} sind es <b>${n2(L.hDscr)} €/m²</b>.`+
+    (S.mrg==="voll"&&r.hmz<L.hNull?" In der Vollanwendung ist der Richtwertmietzins die Obergrenze – das Objekt trägt sich dann nur mit mehr Eigenkapital.":"");
+
+  const ch=[],ekq=r.inv>0?r.ek/r.inv:0;
+  if(r.dscr<1)ch.push(["bad",`Die Miete deckt die Kreditrate nicht: monatlich fehlen ${eur((r.annJ-r.noi)/12)}. Mehr Eigenkapital, längere Laufzeit oder tilgungsfreie Zeit prüfen.`]);
+  else if(r.dscr<dz)ch.push(["warn",`DSCR ${n2(r.dscr)} unter dem Bankziel ${n2(dz)}. Die Bank wird mehr Eigenmittel oder Sicherheiten verlangen.`]);
+  if(ekq<0.2&&r.kredit>0)ch.push(["warn",`Eigenmittelanteil ${pct(ekq,0)}: Banken erwarten bei Wohnimmobilien meist 20–30 %.`]);
+  if(diff>0.1)ch.push(["warn",`Die Bruttomiete liegt ${pct(diff,0)} über dem Grazer Angebotsmedian – Leerstand höher ansetzen oder Miete belegen.`]);
+  if((+S.leer||0)<2)ch.push(["warn","Leerstand unter 2 % ist optimistisch; Mieterwechsel und Sanierungsphasen einrechnen."]);
+  if(S.mrg!=="aus"&&(+S.wJ||0)>0&&(+S.wJ)<5)ch.push(["warn","Mieterwechsel unter 5 Jahren: Im MRG-Bereich müssen Unternehmer mindestens 5 Jahre befristen."]);
+  if(F_fix())ch.push(["warn",`Nach der Fixzinsphase rechnet der Rechner mit ${n2(+S.zins2)} %. Steigt der Zins stärker, sinkt der Cashflow.`]);
+  if(!k&&(+S.mw||0)*r.A<r.inv)ch.push(["warn","Der Marktwert nach Sanierung liegt unter der Gesamtinvestition – Buchverlust bei sofortigem Verkauf."]);
+  if(!ch.length)ch.push(["good","Keine Auffälligkeiten bei Rate, Eigenmitteln, Miethöhe und Leerstand."]);
+  $("r-checks").innerHTML=ch.map(([c,t])=>`<li class="${c}">${esc(t)}</li>`).join("");
+
+  chart(r);
+
+  const st=stress(SE);
+  $("stress").innerHTML=st.map(({n,r:x},i)=>{const c=x.dscr<1?"bad":x.dscr>=dz&&(k||x.net>=ziel-1e-9)?"good":"warn",cf=k?x.cfPre1/12:x.cfM;
+    return `<tr${i===0?' class="total"':""}><td>${n}</td><td class="${c}">${pct(x.net,2)}</td><td class="${c}">${isFinite(x.dscr)?n2(x.dscr)+" ×":"–"}</td><td class="${cf<0?"neg":""}">${eur(cf)}</td><td>${pct(x.irr)}</td></tr>`}).join("");
+
+  $("proj").innerHTML=r.rows.map(x=>`<tr><td>${x.t} · ${2026+x.t}</td><td>${eur(x.eff)}</td><td>${eur(x.kost)}</td><td>${eur(x.ertrag)}</td><td>${eur(x.zinsJ)}</td><td>${eur(x.tilgJ)}</td><td class="intern">${eur(x.afaJ)}</td><td class="intern">${eur(x.st)}</td><td class="${x.cf<0?"neg":""}">${eur(x.cf)}</td><td>${eur(x.bal)}</td></tr>`).join("")+
+    `<tr class="exit"><td>Verkauf</td><td colspan="2">${eur(r.sale)} − ${eur(r.vkk)} Kosten</td><td colspan="${k?3:5}">${k?"":"Gewinn "+eur(r.gain)+" · KöSt "+eur(r.exTax)}</td><td class="${r.exNet<0?"neg":""}">${eur(r.exNet)}</td><td>nach Kredit</td></tr>`+
+    `<tr class="total"><td>Summe</td><td colspan="${k?5:7}">Eigenkapital ${eur(r.ek)} · Rückflüsse inkl. Verkauf</td><td>${eur(r.flows.slice(1).reduce((a,b)=>a+b,0))}</td><td>IRR ${pct(r.irr)}</td></tr>`;
+
+  const kBase=+SE.kaufM2||0,ks=[-300,-200,-100,0,100,200,300].map(d=>kBase+d).filter(v=>v>=0);
+  const hb=Math.round(r.hmz*4)/4,hs=[-2,-1,0,1,2].map(d=>hb+d).filter(v=>v>0);
+  let t=`<thead><tr><th>Kauf ↓ / Miete →</th>${hs.map(v=>`<th>${n2(v)} €</th>`).join("")}</tr></thead><tbody>`;
+  ks.forEach(kk=>{t+=`<tr><th class="rh">${n0(kk)} €/m²</th>`;hs.forEach(v=>{const c2=calc(SE,{kpM2:kk,hmz:v}),c=c2.dscr<1?"bad":(k?c2.dscr>=dz:(c2.net>=ziel-1e-9&&c2.dscr>=dz))?"good":"warn",cur=kk===kBase&&v===hb;t+=`<td class="${c}${cur?" cur":""}">${pct(c2.net,2)}</td>`});t+="</tr>"});
+  $("sens").innerHTML=t+"</tbody>";
+}
+function F_fix(){return (+S.zinsFix||0)>0&&(+S.zinsFix)<(+S.H||0)}
+
+document.addEventListener("input",e=>{const t=e.target;if(t.dataset.k){S[t.dataset.k]=t.type==="checkbox"?t.checked:(t.type==="number"?(t.value===""?0:+t.value):t.value);
+  if(t.dataset.k==="mw")document.querySelectorAll('[data-k="mw"]').forEach(el=>{if(el!==t)el.value=S.mw});update()}});
+document.addEventListener("change",e=>{const t=e.target;if(t.dataset.k&&(t.type==="checkbox"||t.tagName==="SELECT")){S[t.dataset.k]=t.type==="checkbox"?t.checked:t.value;update()}});
+["voll","teil","aus"].forEach(m=>$("m-"+m).onclick=()=>{S.mrg=m;setModes();update()});
+$("v-intern").onclick=()=>{view="intern";setModes();update()};$("v-kunde").onclick=()=>{view="kunde";setModes();update()};
+let resetArmed=false;
+$("reset").onclick=()=>{if(!resetArmed){resetArmed=true;$("reset").textContent="Wirklich zurücksetzen?";setTimeout(()=>{resetArmed=false;$("reset").textContent="Beispielwerte"},4000);return}
+  resetArmed=false;$("reset").textContent="Beispielwerte";S=clone(DEFAULTS);currentId=null;toForm();update();$("saveMsg").textContent="Beispielwerte geladen, neues Objekt."};
+toForm();update();
+
+/* Objektliste: in Claude gemeinsam (db), auf der Website lokal in diesem Browser */
+let db=null,uid=null,objs=[];const LKEY="maison-miet-objekte";
+const fmtDate=t=>t?new Date(t).toLocaleDateString("de-AT",{day:"2-digit",month:"2-digit",year:"numeric"}):"–";
+const local={all(){try{return JSON.parse(localStorage.getItem(LKEY)||"[]")}catch(e){return []}},put(list){try{localStorage.setItem(LKEY,JSON.stringify(list));return true}catch(e){return false}}};
+function renderObjs(){
+  const tb=$("objs");
+  if(!objs.length){tb.innerHTML=`<tr><td colspan="9" class="empty">Noch keine Mietobjekte gespeichert. Füllt das Blatt aus und tippt auf „Objekt speichern“.</td></tr>`;return}
+  tb.innerHTML=objs.map(o=>`<tr><td><b>${esc(o.name)}</b>${o.adresse?`<br><span class="msg">${esc(o.adresse)}</span>`:""}</td><td><span class="pill">${esc(o.status)}</span></td>
+    <td>${n0(o.a||0)} m²</td><td>${eur(o.kp||0)}</td><td>${n2(o.hmz||0)} €/m²</td><td style="color:var(--${(o.net||0)>=(o.ziel||0.04)-1e-9?"good":"warn"})">${pct(o.net||0,2)}</td>
+    <td style="color:var(--${(o.cfM||0)<0?"bad":"good"})">${eur(o.cfM||0)}</td><td>${fmtDate(o.updatedAt)}</td>
+    <td><div class="btns" style="flex-wrap:nowrap"><button type="button" class="btn" data-load="${esc(o.id)}">Laden</button><button type="button" class="btn" data-del="${esc(o.id)}">Löschen</button></div></td></tr>`).join("");
+}
+function rowData(){const r=calc(S);return{name:S.name||"Ohne Namen",adresse:S.adresse||"",status:S.status,a:r.A,kp:r.kp,hmz:r.hmz,net:r.net,cfM:r.cfM,dscr:isFinite(r.dscr)?r.dscr:null,ziel:(+S.ziel||0)/100,state:clone(S),updatedAt:Date.now(),by:uid||""}}
+async function save(asNew){
+  const data=rowData();$("save").disabled=true;$("saveNew").disabled=true;
+  try{
+    if(db){const col=db.collection("mietobjekte");if(asNew||!currentId){const ref=col.doc();await ref.set(data);currentId=ref.id}else{await col.doc(currentId).set(data)}}
+    else{let list=local.all();if(asNew||!currentId||!list.some(o=>o.id===currentId)){currentId="l"+Date.now().toString(36);list.unshift(Object.assign({id:currentId},data))}else{list=list.map(o=>o.id===currentId?Object.assign({id:currentId},data):o)}
+      if(!local.put(list))throw new Error("local");objs=list;renderObjs()}
+    $("saveMsg").textContent="Gespeichert: "+data.name+(db?"":" (in diesem Browser)");try{localStorage.setItem(KEY,JSON.stringify({S,id:currentId}))}catch(e){}}
+  catch(e){$("saveMsg").textContent=e&&e.code==="permission_denied"?"Speichern nicht erlaubt: Bitte den Eigentümer um Bearbeitungszugriff.":"Speichern hat nicht geklappt. Bitte nochmal versuchen."}
+  finally{$("save").disabled=false;$("saveNew").disabled=false}
+}
+let delArm=null;
+$("objs").addEventListener("click",async e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.load){const o=objs.find(x=>x.id===b.dataset.load);if(o&&o.state){S=Object.assign(clone(DEFAULTS),clone(o.state));currentId=o.id;toForm();update();$("saveMsg").textContent="Geladen: "+o.name;window.scrollTo({top:0,behavior:"smooth"})}}
+  if(b.dataset.del){if(delArm!==b.dataset.del){delArm=b.dataset.del;b.textContent="Sicher?";setTimeout(()=>{if(delArm===b.dataset.del){delArm=null;b.textContent="Löschen"}},4000);return}
+    const id=b.dataset.del;delArm=null;
+    try{if(db)await db.collection("mietobjekte").doc(id).delete();else{objs=local.all().filter(o=>o.id!==id);local.put(objs);renderObjs()}
+      if(currentId===id)currentId=null;$("saveMsg").textContent="Objekt gelöscht."}catch(err){$("saveMsg").textContent="Löschen hat nicht geklappt."}}
+});
+$("save").onclick=()=>save(false);$("saveNew").onclick=()=>save(true);
+function useLocal(msg){db=null;objs=local.all();renderObjs();$("save").disabled=false;$("saveNew").disabled=false;$("listSub").textContent="Gespeicherte Kalkulationen in diesem Browser. Für eine gemeinsame Liste den Rechner in Claude öffnen.";$("saveMsg").textContent=msg}
+(async()=>{
+  if(!HOST){useLocal(objsCount()+" Objekte in diesem Browser.");return}
+  try{
+    db=await claude.use("db");let user=null;try{user=await claude.use("user")}catch(e){}
+    if(user){try{uid=await user.id()}catch(e){}}
+    if(!db){useLocal("Gemeinsame Liste hier nicht verfügbar – es wird in diesem Browser gespeichert.");return}
+    $("save").disabled=false;$("saveNew").disabled=false;
+    const timer=setTimeout(()=>{$("saveMsg").textContent="Objektliste lädt langsam. Rechnen geht schon."},10000);
+    db.collection("mietobjekte").orderBy("updatedAt","desc").onSnapshot(snap=>{clearTimeout(timer);objs=snap.docs.map(d=>Object.assign({id:d.id},d.data()));renderObjs();
+      $("saveMsg").textContent=objs.length?objs.length+" gespeicherte Mietobjekte.":"Noch keine Mietobjekte gespeichert."},err=>{clearTimeout(timer);useLocal("Gemeinsame Liste nicht erreichbar – es wird in diesem Browser gespeichert.")});
+  }catch(e){useLocal("Gemeinsame Liste hier nicht verfügbar – es wird in diesem Browser gespeichert.")}
+})();
+function objsCount(){return local.all().length}
+
+/* Export */
+const MRG={voll:"Vollanwendung MRG (Richtwert)",teil:"Teilanwendung MRG (freier Mietzins)",aus:"Vollausnahme (ABGB)"};
+const FIELDS=[["Nutzfläche","A","m²"],["Einkaufspreis pro m²","kaufM2","€/m²",1],["Marktwert / Kaufpreis Käufer pro m²","mw","€/m²"],["Grunderwerbsteuer","grest","%"],["Eintragung Eigentum","eintr","%"],["Notar / Treuhand","notar","%"],["Makler beim Kauf","maklerOn",""],["Maklerprovision","makler","%"],["Sanierung","sanM2","€/m²",1],["Küche / Einrichtung","einr","€",1],
+  ["MRG-Bereich","mrg",""],["Richtwert","rw","€/m²"],["Zuschläge","zu","%"],["Abschläge","ab","%"],["Befristet (−25 %)","befr",""],["Hauptmietzins frei","miete","€/m²"],["Stellplatz, Keller","extra","€/M"],["Betriebskosten","bk","€/m²"],
+  ["Leerstand / Mietausfall","leer","%"],["Mietverwaltung","verw","€/M"],["Rücklage","rl","€/m²·M"],["Instandhaltung","inst","€/m²·J"],["Inflation p.a.","infl","%"],["Mieterwechsel alle","wJ","J."],["Makler Neuvermietung","wMM","BMM"],["Kosten je Wechsel","wRen","€"],["Verspätet bezahlte Miete","rueck","%"],["Ø Verzugsdauer","verzD","Mon."],["Verzugszinsen","verzZ","%"],
+  ["Fremdfinanzierung","fk","%"],["Sollzins","zins","%"],["Fixzinsphase","zinsFix","J."],["Zins danach","zins2","%"],["Laufzeit","lz","J."],["Tilgungsfreie Zeit","tf","J."],["Sondertilgung p.a.","sond","€"],["Bearbeitungsgebühr","bearb","%"],["Eintragung Pfandrecht","pfand","%"],["Mindest-DSCR","dscrZiel","×"],
+  ["Gebäudeanteil","geb","%",1],["AfA","afa","%",1],["Beschleunigte AfA","beschl","",1],["KöSt","koest","%",1],["Verluste verrechnen","verlust","",1],
+  ["Haltedauer","H","J."],["Wertsteigerung p.a.","wert","%"],["Verkaufskosten","vkk","%"],["Ziel-Nettomietrendite","ziel","%",1]];
+const fv=k=>{const v=S[k];if(typeof v==="boolean")return v?"ja":"nein";if(k==="mrg")return MRG[v];return v};
+const fname=(suf,ext)=>"Maison_Miete_"+(S.name||"Objekt").replace(/[^\wäöüÄÖÜß-]+/g,"_")+(suf?"_"+suf:"")+"."+ext;
+let dl=null;
+async function saveFile(name,blob){
+  if(dl){try{await dl.save({filename:name,data:blob});$("xMsg").textContent="Bereit: "+name}catch(e){$("xMsg").textContent=e&&e.code==="unavailable"?"Download ist in dieser Ansicht nicht möglich – Seite über den Link öffnen.":"Download abgebrochen."}return}
+  if(HOST){$("xMsg").textContent="Download ist in dieser Ansicht nicht möglich – Seite über den Link im eigenen Tab öffnen.";return}
+  try{const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);$("xMsg").textContent="Heruntergeladen: "+name}
+  catch(e){$("xMsg").textContent="Download hat nicht geklappt."}
+}
+function exposeText(){
+  const x=calc(kundeS(S)),A=x.A;
+  return [`${S.name||"Anlagewohnung"}${S.adresse?" – "+S.adresse:""}`,
+`Nutzfläche ${n0(A)} m² · Kaufpreis ${eur(x.kp)} (${n0(x.kp/A)} €/m²) zzgl. Nebenkosten ca. ${eur(x.nk)}`,
+`Mietzins: ${n2(x.hmz)} €/m² netto (${eur(x.hmz*A+(+S.extra||0))} pro Monat) zzgl. Betriebskosten und 10 % USt · ${MRG[S.mrg]}`,
+`Bruttomietrendite ${pct(x.brutto,2)} auf den Kaufpreis · Nettomietrendite ${pct(x.net,2)} nach Kosten und ${S.leer} % Leerstand`,
+`Finanzierungsbeispiel: ${pct(x.inv>0?x.ek/x.inv:0,0)} Eigenmittel (${eur(x.ek)}), Kredit ${eur(x.kredit)} zu ${S.zins} % auf ${S.lz} Jahre, Rate ${eur(x.annM)}/Monat`,
+`Monatlicher Überschuss vor Steuern im 1. Jahr: ${eur(x.cfPre1/12)}`,
+`Vermögensaufbau: nach ${x.H} Jahren rund ${eur(x.rows[x.rows.length-1].wertT-x.rows[x.rows.length-1].bal)} Eigenkapital im Objekt (bei ${S.wert} % Wertsteigerung p.a.)`,
+`Wertsicherung nach Mieten-Wertsicherungsgesetz, jährlich zum 1. April.`,
+`Beispielrechnung der Maison Estate GmbH auf Basis von Annahmen (Stand ${new Date().toLocaleDateString("de-AT")}). Keine Zusicherung von Ertrag, Mietentwicklung oder Wertsteigerung; keine Steuer- oder Finanzierungsberatung.`].join("\n");
+}
+$("xText").onclick=async()=>{const t=exposeText(),ta=$("xTextArea");ta.value=t;ta.hidden=false;
+  try{await navigator.clipboard.writeText(t);$("xMsg").textContent="Exposé-Text kopiert."}catch(e){ta.focus();ta.select();$("xMsg").textContent="Text markiert – mit Kopieren übernehmen."}};
+if(!HOST){$("xPrint").hidden=false;$("xPrint").onclick=()=>window.print()}
+
+const PE=v=>isFinite(v)?(v<0?"-":"")+Math.round(Math.abs(v)).toLocaleString("de-AT")+" EUR":"-";
+const PP=(v,d=2)=>isFinite(v)?(v*100).toLocaleString("de-AT",{minimumFractionDigits:d,maximumFractionDigits:d})+" %":"-";
+const PN=v=>isFinite(v)?v.toLocaleString("de-AT",{minimumFractionDigits:2,maximumFractionDigits:2}):"-";
+const clean=s=>String(s).replace(/€/g,"EUR").replace(/−/g,"-").replace(/–/g,"-");
+function pdfBase(title){const {jsPDF}=window.jspdf,doc=new jsPDF({unit:"mm",format:"a4"});
+  doc.setFillColor(19,32,63);doc.rect(0,0,210,16,"F");doc.setTextColor(196,165,106);doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text("MAISON ESTATE",18,10.5);
+  doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(title,192,10.5,{align:"right"});doc.setTextColor(19,32,63);
+  const st={y:28};
+  st.br=n=>{if(st.y>(n||278)){doc.addPage();st.y=20}};
+  st.line=(a,b,bold)=>{doc.setFont("helvetica",bold?"bold":"normal");doc.text(clean(a),18,st.y);if(b!==undefined)doc.text(clean(b),192,st.y,{align:"right"});st.y+=6;st.br()};
+  st.head=t=>{st.y+=3;st.br(262);doc.setFontSize(11);doc.setTextColor(156,127,69);st.line(t,undefined,true);doc.setTextColor(19,32,63);doc.setFontSize(10)};
+  st.table=(hdr,rows,cols)=>{doc.setFontSize(8.5);doc.setFont("helvetica","bold");hdr.forEach((hh,i)=>doc.text(clean(hh),cols[i],st.y,{align:i?"right":"left"}));st.y+=5;doc.setFont("helvetica","normal");
+    rows.forEach(r=>{r.forEach((c,i)=>doc.text(clean(c),cols[i],st.y,{align:i?"right":"left"}));st.y+=4.6;st.br(282)});doc.setFontSize(10)};
+  st.foot=t=>{st.y+=5;st.br(268);doc.setFontSize(7.5);doc.setTextColor(92,100,120);doc.text(doc.splitTextToSize(clean(t),174),18,st.y)};
+  return{doc,st}}
+function pdfAkte(){
+  if(!window.jspdf){$("xMsg").textContent="PDF-Modul lädt noch – bitte gleich nochmal tippen.";return}
+  const r=calc(S),L=limits(S),{doc,st}=pdfBase("Mietrechner · Objektakte");
+  doc.setFontSize(16);st.line(S.name||"Objekt",undefined,true);doc.setFontSize(10);
+  st.line((S.adresse||"")+"   Status: "+S.status+"   "+MRG[S.mrg]+"   Stand: "+new Date().toLocaleDateString("de-AT"));
+  st.head("Ergebnis");
+  [["Nettomietrendite",PP(r.net)],["Bruttomietrendite auf Kaufpreis",PP(r.brutto)],["Kaufpreisfaktor",PN(r.faktor)+"-fach"],["DSCR",isFinite(r.dscr)?PN(r.dscr):"kein Kredit"],["Cashflow nach Steuer Jahr 1",PE(r.cf1)+"  ("+PE(r.cfM)+"/Monat)"],
+   ["Eigenkapitalrendite Jahr 1",PP(r.coc,1)],["EK-IRR inkl. Verkauf nach "+r.H+" J.",PP(r.irr,1)],["Max. Kaufpreis für Zielrendite",isFinite(L.kmax)?Math.floor(L.kmax).toLocaleString("de-AT")+" EUR/m²":"-"],["Mindestmiete: Rate gedeckt / DSCR "+PN(+S.dscrZiel),PN(L.hNull)+" / "+PN(L.hDscr)+" EUR/m²"]].forEach(([a,b])=>st.line(a,b));
+  st.head("Investition & Finanzierung");
+  [["Kaufpreis",PE(r.kp)],["Kaufnebenkosten ("+PP(r.nkR,1)+")",PE(r.nk)],["Sanierung & Einrichtung",PE(r.san)],["Pfandrecht & Bearbeitung",PE(r.finK)],["Gesamtinvestition",PE(r.inv)],["Eigenkapital",PE(r.ek)],["Kredit ("+S.zins+" %, "+S.lz+" J."+(r.tf?", "+r.tf+" J. tilgungsfrei":"")+")",PE(r.kredit)],["Rate",PE(r.annM)+"/Monat"]].forEach(([a,b],i)=>st.line(a,b,i===4));
+  st.head("Miete & Bewirtschaftung pro Jahr");
+  [["Hauptmietzins",PN(r.hmz)+" EUR/m²"],["Sollmiete inkl. Nebenflächen",PE(r.mieteJ)],["Leerstand "+S.leer+" %",PE(-r.mieteJ*S.leer/100)],["Verzugszinsen netto",PE(r.verzJ)],["Mieterwechsel (Makler, Ausmalen)",PE(-r.wechselJ)],["Übrige nicht umlegbare Kosten",PE(-(r.kostenJ-r.wechselJ))],["Mietertrag nach Kosten",PE(r.noi)]].forEach(([a,b],i,arr)=>st.line(a,b,i===arr.length-1));
+  st.head("Stresstest");
+  st.table(["Szenario","Nettorendite","DSCR","Cashflow/M","EK-IRR"],stress(S).map(({n,r:x})=>[n,PP(x.net),isFinite(x.dscr)?PN(x.dscr):"-",PE(x.cfM),PP(x.irr,1)]),[18,120,142,168,192]);
+  st.head("Hochrechnung");
+  st.table(["Jahr","Miete eff.","Ertrag","Zinsen","Tilgung","AfA","KöSt","Cashflow","Restschuld"],
+    r.rows.map(x=>[x.t+" ("+(2026+x.t)+")",PE(x.eff),PE(x.ertrag),PE(x.zinsJ),PE(x.tilgJ),PE(x.afaJ),PE(x.st),PE(x.cf),PE(x.bal)]),[18,52,70,88,106,124,142,165,192]);
+  st.y+=2;st.line("Verkauf nach "+r.H+" Jahren: "+PE(r.sale)+", netto nach Kosten, Kredit und KöSt",PE(r.exNet),true);
+  st.head("Eingaben");doc.setFontSize(8.5);
+  FIELDS.forEach(([l,kk,u])=>{doc.text(clean(l),18,st.y);doc.text(clean(String(fv(kk))+(u?" "+u:"")),110,st.y,{align:"right"});st.y+=4.4;st.br(282)});
+  st.foot("Interne Kalkulation mit Annahmen, keine Steuer- oder Rechtsberatung. MRG-Bereich mit Mag. Ogris, AfA und Gebäudeanteil mit Mag. Hauser abstimmen.");
+  return saveFile(fname("Objektakte","pdf"),doc.output("blob"));
+}
+function pdfExpose(){
+  if(!window.jspdf){$("xMsg").textContent="PDF-Modul lädt noch – bitte gleich nochmal tippen.";return}
+  const x=calc(kundeS(S)),A=x.A,{doc,st}=pdfBase("Renditeberechnung"),lr=x.rows[x.rows.length-1];
+  doc.setFontSize(18);st.line(S.name||"Anlagewohnung",undefined,true);doc.setFontSize(10);if(S.adresse)st.line(S.adresse);
+  st.head("Objekt & Kaufpreis");
+  [["Nutzfläche",n0(A)+" m²"],["Kaufpreis",PE(x.kp)+"  ("+n0(x.kp/A)+" EUR/m²)"],["Kaufnebenkosten ca.",PE(x.nk)+"  ("+PP(x.nkR,1)+")"],["Gesamtkosten inkl. Finanzierungsnebenkosten",PE(x.inv)]].forEach(([a,b])=>st.line(a,b));
+  st.head("Miete");
+  [["Mietzins netto",PN(x.hmz)+" EUR/m²  ·  "+PE(x.hmz*A+(+S.extra||0))+"/Monat"],["Jahresnettomiete",PE(x.mieteJ)],["Mietrechtlicher Rahmen",MRG[S.mrg]],["Wertsicherung","jährlich 1. April, Mieten-Wertsicherungsgesetz"]].forEach(([a,b])=>st.line(a,b));
+  st.head("Rendite");
+  [["Bruttomietrendite auf den Kaufpreis",PP(x.brutto)],["Nettomietrendite nach Kosten und Leerstand",PP(x.net)],["Kaufpreisfaktor",PN(x.faktor)+"-fach"]].forEach(([a,b])=>st.line(a,b));
+  st.head("Finanzierungsbeispiel");
+  [["Eigenmittel",PE(x.ek)+"  ("+PP(x.inv>0?x.ek/x.inv:0,0)+")"],["Kredit",PE(x.kredit)],["Zinssatz / Laufzeit",S.zins+" % / "+S.lz+" Jahre"+(x.tf?", "+x.tf+" J. tilgungsfrei":"")],["Monatliche Rate",PE(x.annM)],["Überschuss vor Steuern im 1. Jahr",PE(x.cfPre1/12)+"/Monat"],["Eigenkapital im Objekt nach "+x.H+" Jahren",PE(lr.wertT-lr.bal)]].forEach(([a,b])=>st.line(a,b));
+  st.head("Entwicklung über "+x.H+" Jahre (vor Steuern)");
+  st.table(["Jahr","Miete eff.","Kosten","Ertrag","Kreditrate","Überschuss","Restschuld"],
+    x.rows.map(r=>[r.t+" ("+(2026+r.t)+")",PE(r.eff),PE(r.kost),PE(r.ertrag),PE(r.paid),PE(r.ertrag-r.paid),PE(r.bal)]),[18,60,82,106,132,160,192]);
+  st.foot("Beispielrechnung der Maison Estate GmbH auf Basis von Annahmen zu Miete, Leerstand, Kosten, Zinsen und Inflation (Stand "+new Date().toLocaleDateString("de-AT")+"). Sie stellt keine Zusicherung von Ertrag, Mietentwicklung oder Wertsteigerung dar und ersetzt keine Steuer-, Rechts- oder Finanzierungsberatung. Steuerliche Auswirkungen sind nicht berücksichtigt. Finanzierung vorbehaltlich Bankzusage.");
+  return saveFile(fname("Expose","pdf"),doc.output("blob"));
+}
+function excel(){
+  if(!window.XLSX){$("xMsg").textContent="Excel-Modul lädt noch – bitte gleich nochmal tippen.";return}
+  const k=view==="kunde",SE=E(),r=calc(SE),L=limits(SE),XL=window.XLSX,wb=XL.utils.book_new();
+  const sheet=(aoa,w)=>{const ws=XL.utils.aoa_to_sheet(aoa);ws["!cols"]=w.map(c=>({wch:c}));return ws};
+  const rd=(v,d=2)=>isFinite(v)?Math.round(v*Math.pow(10,d))/Math.pow(10,d):null;
+  const res=[["Maison Estate GmbH – Mietrechner"+(k?" (Käufersicht, vor Steuern)":"")],[S.name||"Objekt",S.adresse||""],["Stand",new Date().toLocaleDateString("de-AT")],[],
+    ["Kennzahl","Wert","Einheit"],["Nettomietrendite",rd(r.net*100),"%"],["Bruttomietrendite auf Kaufpreis",rd(r.brutto*100),"%"],["Kaufpreisfaktor",rd(r.faktor),"×"],["DSCR",isFinite(r.dscr)?rd(r.dscr):"kein Kredit","×"],
+    [k?"Überschuss vor Steuern Jahr 1":"Cashflow nach Steuer Jahr 1",rd(k?r.cfPre1:r.cf1,0),"€"],["pro Monat",rd((k?r.cfPre1:r.cf1)/12,0),"€"],["EK-Rendite Jahr 1",rd(r.coc*100),"%"],["EK-IRR inkl. Verkauf",rd(r.irr*100),"%"],[],
+    ["Kaufpreis",rd(r.kp,0),"€"],["Kaufnebenkosten",rd(r.nk,0),"€"],...(k?[]:[["Sanierung & Einrichtung",rd(r.san,0),"€"]]),["Pfandrecht & Bearbeitung",rd(r.finK,0),"€"],["Gesamtinvestition",rd(r.inv,0),"€"],["Eigenkapital",rd(r.ek,0),"€"],["Kredit",rd(r.kredit,0),"€"],["Rate pro Monat",rd(r.annM,0),"€"],[],
+    ["Hauptmietzins",rd(r.hmz),"€/m²"],["Sollmiete p.a.",rd(r.mieteJ,0),"€"],["Verzugszinsen netto p.a.",rd(r.verzJ,0),"€"],["Mieterwechsel p.a.",rd(r.wechselJ,0),"€"],["Nicht umlegbare Kosten gesamt p.a.",rd(r.kostenJ,0),"€"],["Mietertrag nach Kosten p.a.",rd(r.noi,0),"€"],[],
+    ...(k?[]:[["Max. Kaufpreis für Zielrendite",isFinite(L.kmax)?Math.floor(L.kmax):null,"€/m²"]]),["Mindestmiete: Rate gedeckt",rd(L.hNull),"€/m²"],["Mindestmiete für DSCR",rd(L.hDscr),"€/m²"],[],
+    ["Wert nach "+r.H+" J.",rd(r.sale,0),"€"],["Verkauf netto nach Kredit"+(k?"":" und KöSt"),rd(r.exNet,0),"€"],[],["Beispielrechnung auf Basis von Annahmen, keine Zusicherung von Ertrag oder Wertentwicklung."]];
+  XL.utils.book_append_sheet(wb,sheet(res,[38,18,10]),"Ergebnis");
+  XL.utils.book_append_sheet(wb,sheet([["Eingabe","Wert","Einheit"],...FIELDS.filter(f=>!(k&&f[3])).map(([l,kk,u])=>[l,fv(kk),u])],[34,30,10]),"Eingaben");
+  const hdr=k?["Jahr","Kalenderjahr","Miete eff.","Kosten","Ertrag","Zinsen","Tilgung","Überschuss","Restschuld","Objektwert"]:["Jahr","Kalenderjahr","Miete eff.","Kosten","Ertrag","Zinsen","Tilgung","AfA","KöSt","Cashflow","Restschuld","Objektwert"];
+  XL.utils.book_append_sheet(wb,sheet([hdr,...r.rows.map(y=>k?[y.t,2026+y.t,rd(y.eff,0),rd(y.kost,0),rd(y.ertrag,0),rd(y.zinsJ,0),rd(y.tilgJ,0),rd(y.cf,0),rd(y.bal,0),rd(y.wertT,0)]:
+    [y.t,2026+y.t,rd(y.eff,0),rd(y.kost,0),rd(y.ertrag,0),rd(y.zinsJ,0),rd(y.tilgJ,0),rd(y.afaJ,0),rd(y.st,0),rd(y.cf,0),rd(y.bal,0),rd(y.wertT,0)]),[],["Verkauf netto",null,rd(r.exNet,0)]],hdr.map(()=>13)),"Hochrechnung");
+  XL.utils.book_append_sheet(wb,sheet([["Szenario","Nettorendite %","DSCR",k?"Überschuss/M €":"Cashflow/M €","EK-IRR %"],...stress(SE).map(({n,r:x})=>[n,rd(x.net*100),isFinite(x.dscr)?rd(x.dscr):null,rd(k?x.cfPre1/12:x.cfM,0),rd(x.irr*100)])],[44,15,10,16,12]),"Stresstest");
+  const out=XL.write(wb,{bookType:"xlsx",type:"array"});
+  return saveFile(fname(k?"Kunde":"",'xlsx'),new Blob([out],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+}
+$("xExcel").onclick=()=>excel();$("xPdf").onclick=()=>pdfAkte();$("xExpose").onclick=()=>pdfExpose();
+(async()=>{if(!HOST)return;try{dl=await claude.use("downloads")}catch(e){}
+  if(!dl)$("xMsg").textContent="Dateidownload ist in dieser Vorschau gesperrt – den Rechner über den Link im eigenen Tab öffnen. Exposé-Text funktioniert überall.";})();
+})();
+</script>
+
+</body></html>

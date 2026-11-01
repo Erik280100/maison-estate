@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { HtmlRechner } from "@/features/rechner/HtmlRechner";
 import { rechner } from "@/features/rechner/registry";
 
 export function generateStaticParams() {
@@ -31,7 +32,11 @@ export default async function RechnerPage({
         ← Übersicht
       </Link>
       <h1 className="mt-4 mb-8 font-serif text-4xl">{r.title}</h1>
-      <r.Component />
+      {r.htmlFile ? (
+        <HtmlRechner file={r.htmlFile} title={r.title} />
+      ) : (
+        r.Component && <r.Component />
+      )}
     </>
   );
 }

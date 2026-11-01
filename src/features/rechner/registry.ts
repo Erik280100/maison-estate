@@ -5,7 +5,9 @@ export type Rechner = {
   slug: string;
   title: string;
   description: string;
-  Component: ComponentType;
+  /** React-Komponente ODER eigenständige HTML-Datei aus public/rechner/ */
+  Component?: ComponentType;
+  htmlFile?: string;
 };
 
 /**
@@ -19,5 +21,24 @@ export const rechner: Rechner[] = [
     description:
       "Gewinn, Marge und Rendite p. a. für ein Objekt von Ankauf bis Verkauf (Beispielrechner).",
     Component: AnkaufVerkaufRechner,
+  },
+  {
+    slug: "umschuldung",
+    title: "Umschuldungsrechner",
+    description: "Vergleich einer bestehenden Finanzierung mit einer Umschuldung.",
+    htmlFile: "umschuldung.html",
+  },
+  {
+    slug: "fix-und-flip",
+    title: "Fix & Flip / Margenrechner",
+    description:
+      "Marge, Gewinn und Rendite für Kauf, Sanierung und Verkauf inkl. Portfolio und PDF.",
+    htmlFile: "fix-und-flip.html",
+  },
+  {
+    slug: "mietrechner",
+    title: "Mietrechner",
+    description: "Mietrendite, Cashflow und DSCR für Bestandsobjekte inkl. PDF/Excel-Export.",
+    htmlFile: "mietrechner.html",
   },
 ];
