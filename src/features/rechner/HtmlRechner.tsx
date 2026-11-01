@@ -1,19 +1,47 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
-
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? process.env.BASE_PATH ?? "";
+import CircularProgress from "@mui/material/CircularProgress";
+import { getSupabase } from "@/lib/supabase";
 
 /**
- * Bettet einen eigenständigen HTML-Rechner (public/rechner/*.html) ein und
- * passt die Höhe an den Inhalt an. Die Datei liegt same-origin, daher ist der
- * Zugriff auf den Inhalt erlaubt.
+ * Lädt einen eigenständigen HTML-Rechner aus dem privaten Supabase-Bucket
+ * "rechner" (nur mit Login lesbar) und zeigt ihn per srcdoc an. Die Datei
+ * liegt bewusst nicht in public/, damit sie nicht ohne Login abrufbar ist.
  */
 export function HtmlRechner({ file, title }: { file: string; title: string }) {
   const ref = useRef<HTMLIFrameElement>(null);
+  const [html, setHtml] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [height, setHeight] = useState(900);
   const observer = useRef<ResizeObserver | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const supabase = getSupabase();
+    if (!supabase) {
+      setError("Supabase ist nicht konfiguriert.");
+      return;
+    }
+    supabase.storage
+      .from("rechner")
+      .download(file)
+      .then(async ({ data, error: err }) => {
+        if (cancelled) return;
+        if (err || !data) {
+          setError(
+            "Rechner konnte nicht geladen werden. Ist die Datei im Bucket „rechner“ hochgeladen?",
+          );
+          return;
+        }
+        setHtml(await data.text());
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [file]);
 
   const measure = useCallback(() => {
     const doc = ref.current?.contentDocument;
@@ -32,11 +60,14 @@ export function HtmlRechner({ file, title }: { file: string; title: string }) {
 
   useEffect(() => () => observer.current?.disconnect(), []);
 
+  if (error) return <Alert severity="error">{error}</Alert>;
+  if (html === null) return <CircularProgress aria-label="Rechner wird geladen" />;
+
   return (
     <Box
       component="iframe"
       ref={ref}
-      src={`${basePath}/rechner/${file}`}
+      srcDoc={html}
       title={title}
       onLoad={onLoad}
       sx={{
