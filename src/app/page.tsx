@@ -1,32 +1,63 @@
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Logo } from "@/components/brand/Logo";
 import { Footer } from "@/components/layout/Footer";
+import { DarkSurface } from "@/components/ui/DarkSurface";
 import { GoldDivider } from "@/components/ui/GoldDivider";
 import { phase } from "@/config/company";
 
+const fadeUp = {
+  "@keyframes fadeUp": {
+    from: { opacity: 0, transform: "translateY(14px)" },
+    to: { opacity: 1, transform: "translateY(0)" },
+  },
+  animation: "fadeUp 1.1s ease-out both",
+};
+
 export default function ComingSoonPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-[radial-gradient(ellipse_at_center,var(--color-navy-800)_0%,var(--color-navy-900)_55%,var(--color-navy-950)_100%)] text-gold-500">
-      <main className="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
-        <div className="animate-fade-up">
+    <DarkSurface>
+      <Box
+        component="main"
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          px: 2,
+          py: 8,
+        }}
+      >
+        <Box sx={fadeUp}>
           <Logo
             className="mx-auto h-auto w-64 sm:w-72"
-            priority
             showLegalForm={phase === "eingetragen"}
+            priority
           />
-        </div>
-
-        <div className="animate-fade-up mt-12 flex flex-col items-center gap-6 [animation-delay:400ms]">
+        </Box>
+        <Box
+          sx={{
+            ...fadeUp,
+            animationDelay: "350ms",
+            mt: 7,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 3,
+          }}
+        >
           <GoldDivider />
-          <h1 className="font-serif text-4xl text-gold-300 sm:text-5xl">
+          <Typography variant="h2" component="h1" sx={{ color: "secondary.light", fontSize: { xs: "2.5rem", sm: "3.5rem" } }}>
             Bald für Sie da.
-          </h1>
-          <p className="max-w-md text-balance text-base text-stone-500 sm:text-lg">
-            Ankauf und Verkauf von Wohnungen – persönlich, transparent,
-            unkompliziert.
-          </p>
-        </div>
-      </main>
+          </Typography>
+          <Typography variant="h6" component="p" color="text.secondary" sx={{ maxWidth: 520, fontWeight: 400, textWrap: "balance" }}>
+            Ankauf und Verkauf von Wohnungen – persönlich, transparent, unkompliziert.
+          </Typography>
+        </Box>
+      </Box>
       <Footer />
-    </div>
+    </DarkSurface>
   );
 }

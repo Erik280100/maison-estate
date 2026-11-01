@@ -152,7 +152,9 @@ export default function DatenschutzPage() {
       </section>
 
       <section>
-        <p className="text-sm text-stone-500">Stand: [TODO: Datum]</p>
+        <p>
+          Stand: <V>[TODO: Datum]</V>
+        </p>
       </section>
     </LegalPage>
   );

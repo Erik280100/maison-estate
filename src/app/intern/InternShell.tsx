@@ -1,40 +1,67 @@
 "use client";
 
-import Link from "next/link";
 import type { ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+import Toolbar from "@mui/material/Toolbar";
+import { ThemeProvider } from "@mui/material/styles";
+import LogoutRounded from "@mui/icons-material/LogoutRounded";
 import { AuthProvider, useAuth } from "@/components/auth/AuthProvider";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { Container } from "@/components/layout/Container";
+import { AppLink, LinkButton } from "@/components/ui/AppLink";
+import { brand, darkTheme } from "@/theme/theme";
+
+const links = [
+  { href: "/intern/objekte/", label: "Objekte" },
+  { href: "/intern/rechner/", label: "Rechner" },
+];
 
 function Bar() {
   const { session, signOut } = useAuth();
+  const path = usePathname() ?? "";
   return (
-    <header className="bg-navy-900 text-gold-300">
-      <Container className="flex items-center justify-between gap-4 py-4 text-sm">
-        <nav className="flex gap-6" aria-label="Interne Navigation">
-          <Link href="/intern/" className="font-serif text-xl text-gold-500">
-            Maison Estate intern
-          </Link>
-          <Link href="/intern/objekte/" className="hover:text-gold-500">
-            Objekte
-          </Link>
-          <Link href="/intern/rechner/" className="hover:text-gold-500">
-            Rechner
-          </Link>
-        </nav>
-        <div className="flex items-center gap-4">
-          <span className="hidden text-stone-500 sm:inline">
-            {session?.user.email}
-          </span>
-          <button
-            onClick={() => signOut()}
-            className="border border-gold-500/50 px-3 py-1 hover:border-gold-500 hover:text-gold-500"
-          >
-            Abmelden
-          </button>
-        </div>
-      </Container>
-    </header>
+    <ThemeProvider theme={darkTheme}>
+      <AppBar position="sticky" sx={{ bgcolor: brand.navy950, backgroundImage: "none" }}>
+        <Container>
+          <Toolbar disableGutters sx={{ gap: 2, flexWrap: "wrap" }}>
+            <AppLink
+              href="/intern/"
+              underline="none"
+              sx={{ color: "secondary.main", fontWeight: 700, fontSize: "1.15rem", mr: 2 }}
+            >
+              Maison Estate{" "}
+              <Box component="span" sx={{ color: "text.secondary", fontWeight: 500 }}>
+                intern
+              </Box>
+            </AppLink>
+            <Stack direction="row" spacing={0.5} sx={{ flex: 1 }}>
+              {links.map((l) => (
+                <LinkButton
+                  key={l.href}
+                  href={l.href}
+                  color="inherit"
+                  sx={{
+                    color: path.startsWith(l.href.slice(0, -1)) ? "secondary.main" : "text.primary",
+                  }}
+                >
+                  {l.label}
+                </LinkButton>
+              ))}
+            </Stack>
+            <Box component="span" sx={{ display: { xs: "none", md: "block" }, color: "text.secondary", fontSize: 14 }}>
+              {session?.user.email}
+            </Box>
+            <Button variant="outlined" size="small" startIcon={<LogoutRounded />} onClick={() => signOut()}>
+              Abmelden
+            </Button>
+          </Toolbar>
+        </Container>
+      </AppBar>
+    </ThemeProvider>
   );
 }
 
@@ -43,9 +70,9 @@ export function InternShell({ children }: { children: ReactNode }) {
     <AuthProvider>
       <RequireAuth>
         <Bar />
-        <main className="flex-1 py-10">
+        <Box component="main" sx={{ flex: 1, py: { xs: 4, md: 6 } }}>
           <Container>{children}</Container>
-        </main>
+        </Box>
       </RequireAuth>
     </AuthProvider>
   );

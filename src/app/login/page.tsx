@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
+import { Logo } from "@/components/brand/Logo";
+import { AppLink } from "@/components/ui/AppLink";
+import { DarkSurface } from "@/components/ui/DarkSurface";
 import { LoginForm } from "./LoginForm";
 
 export const metadata: Metadata = {
@@ -9,20 +14,31 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,var(--color-navy-800)_0%,var(--color-navy-900)_55%,var(--color-navy-950)_100%)] px-4 text-gold-300">
-      <div className="w-full max-w-sm">
-        <h1 className="font-serif text-4xl">Interner Bereich</h1>
-        <p className="mt-2 text-sm text-stone-500">
-          Nur für das Maison-Estate-Team.
-        </p>
-        <LoginForm />
-        <Link
-          href="/"
-          className="mt-8 inline-block text-sm text-stone-500 hover:text-gold-500"
-        >
-          ← Zur Startseite
-        </Link>
-      </div>
-    </main>
+    <DarkSurface>
+      <Box
+        component="main"
+        sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", px: 2, py: 6 }}
+      >
+        <Box sx={{ width: "100%", maxWidth: 420 }}>
+          <Logo variant="emblem" showLegalForm={false} className="mx-auto mb-6 h-auto w-28" />
+          <Typography variant="h4" component="h1" align="center" sx={{ color: "secondary.light" }}>
+            Interner Bereich
+          </Typography>
+          <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1, mb: 4 }}>
+            Nur für das Maison-Estate-Team.
+          </Typography>
+          <LoginForm />
+          <Box sx={{ mt: 4, textAlign: "center" }}>
+            <AppLink
+              href="/"
+              variant="body2"
+              sx={{ color: "text.secondary", display: "inline-flex", alignItems: "center", gap: 0.5 }}
+            >
+              <ArrowBackRounded fontSize="small" /> Zur Startseite
+            </AppLink>
+          </Box>
+        </Box>
+      </Box>
+    </DarkSurface>
   );
 }

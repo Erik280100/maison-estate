@@ -2,6 +2,9 @@
 
 import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useAuth } from "./AuthProvider";
 
 /**
@@ -19,13 +22,17 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 
   if (!configured) {
     return (
-      <p className="p-8 text-stone-500">
-        Login ist noch nicht eingerichtet (Supabase-Zugangsdaten fehlen).
-      </p>
+      <Box sx={{ p: 4 }}>
+        <Alert severity="info">Login ist noch nicht eingerichtet (Supabase-Zugangsdaten fehlen).</Alert>
+      </Box>
     );
   }
   if (loading || !session) {
-    return <p className="p-8 text-stone-500">Wird geladen …</p>;
+    return (
+      <Box sx={{ display: "grid", placeItems: "center", minHeight: "60vh" }}>
+        <CircularProgress color="secondary" />
+      </Box>
+    );
   }
   return <>{children}</>;
 }

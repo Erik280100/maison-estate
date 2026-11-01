@@ -1,12 +1,23 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { isLive } from "@/lib/site-mode";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import Chip from "@mui/material/Chip";
+import Grid from "@mui/material/Grid";
+import Stack from "@mui/material/Stack";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableRow from "@mui/material/TableRow";
+import Typography from "@mui/material/Typography";
+import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
 import { Container } from "@/components/layout/Container";
-import { getProperties, getPropertyBySlug } from "@/lib/properties";
+import { Footer } from "@/components/layout/Footer";
+import { Header } from "@/components/layout/Header";
+import { AppLink } from "@/components/ui/AppLink";
 import { formatArea, formatPrice, formatRooms } from "@/lib/format";
+import { getProperties, getPropertyBySlug } from "@/lib/properties";
+import { isLive } from "@/lib/site-mode";
 
 export async function generateStaticParams() {
   const properties = await getProperties();
@@ -50,42 +61,59 @@ export default async function PropertyPage({
   return (
     <>
       <Header />
-      <main className="flex-1 py-12">
+      <Box component="main" sx={{ flex: 1, py: { xs: 5, md: 8 } }}>
         <Container>
-          <Link href="/immobilien" className="text-sm text-gold-600 hover:underline">
-            ← Alle Immobilien
-          </Link>
-          <h1 className="mt-4 font-serif text-4xl sm:text-5xl">{p.title}</h1>
+          <AppLink
+            href="/immobilien"
+            variant="body2"
+            sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, color: "secondary.dark" }}
+          >
+            <ArrowBackRounded fontSize="small" /> Alle Immobilien
+          </AppLink>
+          <Typography variant="h2" component="h1" sx={{ mt: 2, fontSize: { xs: "2.25rem", md: "3rem" } }}>
+            {p.title}
+          </Typography>
 
-          <div className="mt-8 grid gap-10 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <div className="flex aspect-[16/10] items-center justify-center bg-navy-900 text-gold-500/60">
+          <Grid container spacing={5} sx={{ mt: 1 }}>
+            <Grid size={{ xs: 12, lg: 8 }}>
+              <Box
+                sx={{
+                  aspectRatio: "16 / 10",
+                  display: "grid",
+                  placeItems: "center",
+                  borderRadius: 3,
+                  color: "secondary.main",
+                  background: "linear-gradient(135deg, #172a52, #0f1f3d)",
+                }}
+              >
                 Galerie folgt
-              </div>
-              <p className="mt-8 leading-relaxed text-navy-800">{p.description}</p>
-              <ul className="mt-6 flex flex-wrap gap-2">
+              </Box>
+              <Typography sx={{ mt: 4, lineHeight: 1.8 }}>{p.description}</Typography>
+              <Stack direction="row" useFlexGap spacing={1} sx={{ mt: 3, flexWrap: "wrap" }}>
                 {p.features.map((f) => (
-                  <li
-                    key={f}
-                    className="border border-gold-500/50 px-3 py-1 text-sm text-navy-700"
-                  >
-                    {f}
-                  </li>
+                  <Chip key={f} label={f} variant="outlined" />
                 ))}
-              </ul>
-            </div>
-
-            <dl className="h-fit divide-y divide-ivory-100 border border-ivory-100 bg-white">
-              {facts.map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4 px-5 py-3 text-sm">
-                  <dt className="text-stone-500">{k}</dt>
-                  <dd className="text-right font-medium">{v}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
+              </Stack>
+            </Grid>
+            <Grid size={{ xs: 12, lg: 4 }}>
+              <Card>
+                <Table>
+                  <TableBody>
+                    {facts.map(([k, v]) => (
+                      <TableRow key={k} sx={{ "&:last-child td": { border: 0 } }}>
+                        <TableCell sx={{ color: "text.secondary" }}>{k}</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600, textTransform: k === "Status" ? "capitalize" : undefined }}>
+                          {v}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Card>
+            </Grid>
+          </Grid>
         </Container>
-      </main>
+      </Box>
       <Footer tone="light" />
     </>
   );

@@ -1,27 +1,47 @@
-import Link from "next/link";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { company } from "@/config/company";
+import { AppLink } from "@/components/ui/AppLink";
 
 export function Footer({ tone = "dark" }: { tone?: "dark" | "light" }) {
-  const base =
-    tone === "dark"
-      ? "text-stone-500 border-navy-800"
-      : "text-navy-700 border-ivory-100";
+  const dark = tone === "dark";
   return (
-    <footer className={`border-t px-4 py-6 text-sm ${base}`}>
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 sm:flex-row">
-        <p>© 2026 {company.displayName}</p>
-        <nav className="flex gap-6" aria-label="Rechtliches">
-          <Link href="/impressum" className="hover:text-gold-500 transition-colors">
-            Impressum
-          </Link>
-          <Link href="/datenschutz" className="hover:text-gold-500 transition-colors">
-            Datenschutz
-          </Link>
-          <Link href="/login" className="hover:text-gold-500 transition-colors">
-            Login
-          </Link>
-        </nav>
-      </div>
-    </footer>
+    <Box
+      component="footer"
+      sx={{
+        borderTop: 1,
+        borderColor: dark ? "rgba(194,164,103,0.2)" : "divider",
+        bgcolor: dark ? "transparent" : "background.paper",
+        py: 3,
+        px: 2,
+      }}
+    >
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={{ xs: 1.5, sm: 0 }}
+        sx={{
+          maxWidth: "lg",
+          mx: "auto",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography variant="body2" color="text.secondary">
+          © 2026 {company.displayName}
+        </Typography>
+        <Stack
+          component="nav"
+          aria-label="Rechtliches"
+          direction="row"
+          spacing={3}
+          sx={{ "& a": { color: "text.secondary", "&:hover": { color: "secondary.main" } } }}
+        >
+          <AppLink href="/impressum" variant="body2">Impressum</AppLink>
+          <AppLink href="/datenschutz" variant="body2">Datenschutz</AppLink>
+          <AppLink href="/login" variant="body2">Login</AppLink>
+        </Stack>
+      </Stack>
+    </Box>
   );
 }

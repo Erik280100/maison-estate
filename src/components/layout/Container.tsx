@@ -1,15 +1,12 @@
 import type { ReactNode } from "react";
+import MuiContainer from "@mui/material/Container";
 
 export function Container({
   children,
-  className = "",
+  maxWidth = "lg",
 }: {
   children: ReactNode;
-  className?: string;
+  maxWidth?: "sm" | "md" | "lg" | "xl";
 }) {
-  return (
-    <div className={`mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 ${className}`}>
-      {children}
-    </div>
-  );
+  return <MuiContainer maxWidth={maxWidth}>{children}</MuiContainer>;
 }

@@ -1,33 +1,51 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
+import { AppLink } from "@/components/ui/AppLink";
 import { Container } from "./Container";
 
-export function LegalPage({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) {
+export function LegalPage({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <main className="flex-1 py-16">
-      <Container className="max-w-3xl">
-        <Link href="/" className="text-sm text-gold-600 hover:underline">
-          ← Zurück zur Startseite
-        </Link>
-        <h1 className="mt-6 font-serif text-4xl sm:text-5xl">{title}</h1>
-        <div className="mt-10 space-y-10 leading-relaxed text-navy-800 [&_h2]:mb-3 [&_h2]:font-serif [&_h2]:text-2xl [&_h2]:text-navy-900 [&_li]:ml-5 [&_li]:list-disc [&_p+p]:mt-3 [&_a]:text-gold-600 [&_a]:underline">
+    <Box component="main" sx={{ flex: 1, py: { xs: 6, md: 10 } }}>
+      <Container maxWidth="md">
+        <AppLink
+          href="/"
+          variant="body2"
+          sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, color: "secondary.dark" }}
+        >
+          <ArrowBackRounded fontSize="small" /> Zurück zur Startseite
+        </AppLink>
+        <Typography variant="h2" component="h1" sx={{ mt: 3, mb: 5, fontSize: { xs: "2.25rem", md: "3rem" } }}>
+          {title}
+        </Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gap: 4,
+            lineHeight: 1.75,
+            color: "text.primary",
+            "& h2": { fontSize: "1.375rem", fontWeight: 700, mb: 1.25, letterSpacing: "-0.01em" },
+            "& p + p": { mt: 1.5 },
+            "& ul": { pl: 3, mt: 1.5, display: "grid", gap: 0.75 },
+            "& a": { color: "secondary.dark", textDecoration: "underline" },
+            "& section": { pb: 3, borderBottom: 1, borderColor: "divider" },
+            "& section:last-of-type": { borderBottom: 0 },
+          }}
+        >
           {children}
-        </div>
+        </Box>
       </Container>
-    </main>
+    </Box>
   );
 }
 
 /** Hebt unausgefüllte [TODO]-Felder gelb hervor. */
 export function V({ children }: { children: string }) {
   return children.includes("[TODO") ? (
-    <mark className="bg-yellow-200 px-1 text-navy-900">{children}</mark>
+    <Box component="mark" sx={{ bgcolor: "#fff3a3", color: "#000", px: 0.5, borderRadius: 0.5 }}>
+      {children}
+    </Box>
   ) : (
     <>{children}</>
   );

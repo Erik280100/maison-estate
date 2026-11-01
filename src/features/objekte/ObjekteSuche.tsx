@@ -1,52 +1,107 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import Alert from "@mui/material/Alert";
+import Badge from "@mui/material/Badge";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Chip from "@mui/material/Chip";
+import Collapse from "@mui/material/Collapse";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import Skeleton from "@mui/material/Skeleton";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import FilterListRounded from "@mui/icons-material/FilterListRounded";
+import MeetingRoomRounded from "@mui/icons-material/MeetingRoomRounded";
+import SquareFootRounded from "@mui/icons-material/SquareFootRounded";
+import { LinkCardActionArea } from "@/components/ui/AppLink";
 import { formatArea, formatPrice } from "@/lib/format";
 import { loadObjekte, type LoadResult } from "./api";
 import { activeFilterCount, applyFilter, emptyFilter, type Filter, type SortKey } from "./filter";
 import { FilterPanel } from "./FilterPanel";
-import { LABELS, type Objekt } from "./types";
+import { LABELS, type Objekt, type ObjektStatus } from "./types";
+
+const statusColor: Record<ObjektStatus, "success" | "warning" | "default"> = {
+  verfuegbar: "success",
+  reserviert: "warning",
+  verkauft: "default",
+};
 
 function ObjektZeile({ o }: { o: Objekt }) {
   const tags = [LABELS[o.objekttyp], ...o.freiflaechen.map((x) => LABELS[x]), ...o.parken.map((x) => LABELS[x])];
   return (
-    <Link
-      href={`/intern/objekte/detail/?id=${o.id}`}
-      className="group grid gap-4 border border-ivory-100 bg-white p-4 transition-shadow hover:shadow-lg sm:grid-cols-[180px_1fr_auto]"
-    >
-      <div className="flex aspect-[4/3] items-center justify-center bg-navy-900 text-xs text-gold-500/60 sm:aspect-auto sm:min-h-28">
-        Foto folgt
-      </div>
-      <div className="min-w-0">
-        <p className="text-xs uppercase tracking-wider text-stone-500">
-          {o.plz} {o.ort}
-          {o.bezirk ? `, ${o.bezirk}` : ""}
-        </p>
-        <h3 className="mt-1 font-serif text-2xl leading-tight group-hover:text-gold-600">{o.titel}</h3>
-        <p className="mt-2 text-sm text-navy-700">
-          {formatArea(o.wohnflaeche)} · {o.zimmer} Zimmer
-        </p>
-        <ul className="mt-3 flex flex-wrap gap-1.5">
-          {tags.map((t) => (
-            <li key={t} className="border border-gold-500/40 px-2 py-0.5 text-xs text-navy-700">
-              {t}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className="flex items-start justify-between gap-2 sm:flex-col sm:items-end">
-        <span className="bg-gold-500 px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-navy-950">
-          {LABELS[o.status]}
-        </span>
-        <div className="sm:text-right">
-          <p className="font-serif text-2xl text-gold-600">{formatPrice(o.preis)}</p>
-          <p className="text-xs text-stone-500">
-            {formatPrice(Math.round(o.preis / o.wohnflaeche))} / m²
-          </p>
-        </div>
-      </div>
-    </Link>
+    <Card sx={{ "&:hover": { boxShadow: 6, borderColor: "secondary.main" } }}>
+      <LinkCardActionArea href={`/intern/objekte/detail/?id=${o.id}`}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", sm: "200px 1fr", md: "220px 1fr auto" },
+            alignItems: "stretch",
+          }}
+        >
+          <Box
+            sx={{
+              minHeight: { xs: 160, sm: 140 },
+              display: "grid",
+              placeItems: "center",
+              color: "secondary.main",
+              background: "linear-gradient(135deg, #172a52, #0f1f3d)",
+              fontSize: 13,
+            }}
+          >
+            Foto folgt
+          </Box>
+          <CardContent sx={{ p: 2.5, minWidth: 0 }}>
+            <Typography variant="overline" color="text.secondary">
+              {o.plz} {o.ort}
+              {o.bezirk ? `, ${o.bezirk}` : ""}
+            </Typography>
+            <Typography variant="h6" component="h3" sx={{ mt: 0.25 }}>
+              {o.titel}
+            </Typography>
+            <Stack direction="row" spacing={2} sx={{ mt: 1, color: "text.secondary" }}>
+              <Typography variant="body2" sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}>
+                <SquareFootRounded fontSize="small" /> {formatArea(o.wohnflaeche)}
+              </Typography>
+              <Typography variant="body2" sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}>
+                <MeetingRoomRounded fontSize="small" /> {o.zimmer} Zimmer
+              </Typography>
+            </Stack>
+            <Stack direction="row" useFlexGap spacing={0.75} sx={{ mt: 1.5, flexWrap: "wrap" }}>
+              {tags.map((t) => (
+                <Chip key={t} label={t} size="small" variant="outlined" />
+              ))}
+            </Stack>
+          </CardContent>
+          <Box
+            sx={{
+              p: 2.5,
+              display: "flex",
+              flexDirection: { xs: "row", md: "column" },
+              alignItems: { xs: "center", md: "flex-end" },
+              justifyContent: "space-between",
+              gap: 1,
+              gridColumn: { sm: "1 / -1", md: "auto" },
+            }}
+          >
+            <Chip label={LABELS[o.status]} size="small" color={statusColor[o.status]} />
+            <Box sx={{ textAlign: { md: "right" } }}>
+              <Typography variant="h5" sx={{ color: "secondary.dark" }}>
+                {formatPrice(o.preis)}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {formatPrice(Math.round(o.preis / o.wohnflaeche))} / m²
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      </LinkCardActionArea>
+    </Card>
   );
 }
 
@@ -63,93 +118,95 @@ export function ObjekteSuche() {
     };
   }, []);
 
-  const treffer = useMemo(
-    () => (data ? applyFilter(data.objekte, filter) : []),
-    [data, filter],
-  );
+  const treffer = useMemo(() => (data ? applyFilter(data.objekte, filter) : []), [data, filter]);
   const count = activeFilterCount(filter);
 
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-serif text-4xl">Objekte</h1>
-          <p className="mt-1 text-stone-500">Suchen und filtern.</p>
-        </div>
-      </div>
+      <Typography variant="h3" component="h1">
+        Objekte
+      </Typography>
+      <Typography color="text.secondary" sx={{ mt: 1 }}>
+        Suchen und filtern.
+      </Typography>
 
       {data?.demo && (
-        <p className="mt-4 border border-gold-500/50 bg-ivory-100 px-4 py-3 text-sm">
-          <strong>Beispieldaten.</strong> Die Tabelle „objekte“ gibt es in Supabase noch nicht.
-          Führe <code>supabase/001_objekte.sql</code> im SQL Editor aus, dann erscheinen hier
-          eure echten Objekte.
-        </p>
+        <Alert severity="info" sx={{ mt: 3 }}>
+          <strong>Beispieldaten.</strong> Die Tabelle „objekte“ gibt es in Supabase noch nicht. Führe{" "}
+          <code>supabase/001_objekte.sql</code> im SQL Editor aus, dann erscheinen hier eure echten Objekte.
+        </Alert>
       )}
       {data?.error && (
-        <p role="alert" className="mt-4 border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <Alert severity="error" sx={{ mt: 3 }}>
           {data.error}
-        </p>
+        </Alert>
       )}
 
-      <section aria-label="Filter" className="mt-6 border border-ivory-100 bg-white p-5">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <button
-            type="button"
-            onClick={() => setShowFilter((v) => !v)}
-            aria-expanded={showFilter}
-            className="text-sm font-medium"
-          >
-            Filter {showFilter ? "▴" : "▾"}
-            {count > 0 && (
-              <span className="ml-2 rounded-full bg-gold-500 px-2 py-0.5 text-xs text-navy-950">
-                {count}
-              </span>
-            )}
-          </button>
-          {count > 0 && (
-            <button
-              type="button"
-              onClick={() => setFilter({ ...emptyFilter, sort: filter.sort })}
-              className="text-sm text-gold-600 hover:underline"
+      <Card component="section" aria-label="Filter" sx={{ mt: 4, p: { xs: 2, sm: 3 } }}>
+        <Stack
+          direction="row"
+          sx={{ alignItems: "center", justifyContent: "space-between", mb: showFilter ? 3 : 0 }}
+        >
+          <Badge badgeContent={count} color="secondary" invisible={count === 0}>
+            <Button
+              startIcon={<FilterListRounded />}
+              onClick={() => setShowFilter((v) => !v)}
+              aria-expanded={showFilter}
+              sx={{ pr: count ? 2 : undefined }}
             >
+              Filter {showFilter ? "ausblenden" : "anzeigen"}
+            </Button>
+          </Badge>
+          {count > 0 && (
+            <Button color="secondary" onClick={() => setFilter({ ...emptyFilter, sort: filter.sort })}>
               Zurücksetzen
-            </button>
+            </Button>
           )}
-        </div>
-        {showFilter && <FilterPanel filter={filter} onChange={setFilter} />}
-      </section>
+        </Stack>
+        <Collapse in={showFilter}>
+          <FilterPanel filter={filter} onChange={setFilter} />
+        </Collapse>
+      </Card>
 
-      <div className="mt-8 mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p aria-live="polite" className="text-sm text-stone-500">
+      <Stack
+        direction="row"
+        sx={{ mt: 5, mb: 2, gap: 2, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}
+      >
+        <Typography aria-live="polite" color="text.secondary">
           {data ? `${treffer.length} von ${data.objekte.length} Objekten` : "Wird geladen …"}
-        </p>
-        <label className="flex items-center gap-2 text-sm">
-          Sortierung
-          <select
+        </Typography>
+        <FormControl size="small" sx={{ minWidth: 220 }}>
+          <InputLabel id="sort-label">Sortierung</InputLabel>
+          <Select
+            labelId="sort-label"
+            label="Sortierung"
             value={filter.sort}
             onChange={(e) => setFilter({ ...filter, sort: e.target.value as SortKey })}
-            className="rounded-sm border border-ivory-100 bg-white px-2 py-1.5"
           >
-            <option value="neueste">Neueste zuerst</option>
-            <option value="preis-auf">Preis aufsteigend</option>
-            <option value="preis-ab">Preis absteigend</option>
-            <option value="flaeche-ab">Wohnfläche absteigend</option>
-          </select>
-        </label>
-      </div>
+            <MenuItem value="neueste">Neueste zuerst</MenuItem>
+            <MenuItem value="preis-auf">Preis aufsteigend</MenuItem>
+            <MenuItem value="preis-ab">Preis absteigend</MenuItem>
+            <MenuItem value="flaeche-ab">Wohnfläche absteigend</MenuItem>
+          </Select>
+        </FormControl>
+      </Stack>
 
-      <div className="space-y-4">
+      <Stack spacing={2}>
+        {!data &&
+          [0, 1, 2].map((i) => <Skeleton key={i} variant="rounded" height={150} />)}
         {treffer.map((o) => (
           <ObjektZeile key={o.id} o={o} />
         ))}
         {data && !data.error && treffer.length === 0 && (
-          <p className="border border-ivory-100 bg-white p-8 text-center text-stone-500">
-            {data.objekte.length === 0
-              ? "Noch keine Objekte angelegt."
-              : "Keine Objekte für diese Filter. Versuche, einzelne Filter zu lockern."}
-          </p>
+          <Card sx={{ p: 6, textAlign: "center" }}>
+            <Typography color="text.secondary">
+              {data.objekte.length === 0
+                ? "Noch keine Objekte angelegt."
+                : "Keine Objekte für diese Filter. Versuche, einzelne Filter zu lockern."}
+            </Typography>
+          </Card>
         )}
-      </div>
+      </Stack>
     </>
   );
 }

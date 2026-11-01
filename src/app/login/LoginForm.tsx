@@ -2,6 +2,12 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CircularProgress from "@mui/material/CircularProgress";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
 import { AuthProvider, useAuth } from "@/components/auth/AuthProvider";
 import { getSupabase } from "@/lib/supabase";
 
@@ -29,53 +35,38 @@ function Form() {
   }
 
   if (!configured) {
-    return (
-      <p className="mt-8 text-sm text-stone-500">
-        Login ist noch nicht eingerichtet.
-      </p>
-    );
+    return <Alert severity="info">Login ist noch nicht eingerichtet.</Alert>;
   }
 
-  const input =
-    "mt-1 w-full rounded-sm border border-navy-700 bg-navy-950 px-3 py-2 text-gold-300 outline-none focus:border-gold-500";
-
   return (
-    <form onSubmit={onSubmit} className="mt-8 space-y-5">
-      <label className="block text-sm">
-        E-Mail
-        <input
+    <Card sx={{ p: 3.5 }}>
+      <Stack component="form" onSubmit={onSubmit} spacing={2.5}>
+        <TextField
+          label="E-Mail"
           type="email"
           required
+          fullWidth
+          size="medium"
           autoComplete="username"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className={input}
         />
-      </label>
-      <label className="block text-sm">
-        Passwort
-        <input
+        <TextField
+          label="Passwort"
           type="password"
           required
+          fullWidth
+          size="medium"
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className={input}
         />
-      </label>
-      {error && (
-        <p role="alert" className="text-sm text-red-300">
-          {error}
-        </p>
-      )}
-      <button
-        type="submit"
-        disabled={busy}
-        className="w-full rounded-sm bg-gold-500 px-4 py-2 font-medium text-navy-950 transition-colors hover:bg-gold-400 disabled:opacity-60"
-      >
-        {busy ? "Anmelden …" : "Anmelden"}
-      </button>
-    </form>
+        {error && <Alert severity="error">{error}</Alert>}
+        <Button type="submit" variant="contained" size="large" disabled={busy} fullWidth>
+          {busy ? <CircularProgress size={22} color="inherit" /> : "Anmelden"}
+        </Button>
+      </Stack>
+    </Card>
   );
 }
 

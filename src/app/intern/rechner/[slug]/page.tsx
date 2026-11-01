@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import Typography from "@mui/material/Typography";
+import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
+import { AppLink } from "@/components/ui/AppLink";
 import { HtmlRechner } from "@/features/rechner/HtmlRechner";
 import { rechner } from "@/features/rechner/registry";
 
@@ -28,10 +30,16 @@ export default async function RechnerPage({
 
   return (
     <>
-      <Link href="/intern/" className="text-sm text-gold-600 hover:underline">
-        ← Übersicht
-      </Link>
-      <h1 className="mt-4 mb-8 font-serif text-4xl">{r.title}</h1>
+      <AppLink
+        href="/intern/"
+        variant="body2"
+        sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, color: "secondary.dark" }}
+      >
+        <ArrowBackRounded fontSize="small" /> Übersicht
+      </AppLink>
+      <Typography variant="h3" component="h1" sx={{ mt: 2, mb: 4 }}>
+        {r.title}
+      </Typography>
       {r.htmlFile ? (
         <HtmlRechner file={r.htmlFile} title={r.title} />
       ) : (

@@ -1,34 +1,50 @@
-import Link from "next/link";
-import type { Property } from "@/types/property";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Chip from "@mui/material/Chip";
+import Typography from "@mui/material/Typography";
+import { LinkCardActionArea } from "@/components/ui/AppLink";
 import { formatArea, formatPrice, formatRooms } from "@/lib/format";
+import type { Property } from "@/types/property";
 
-export function PropertyCard({ property }: { property: Property }) {
-  const p = property;
+export function PropertyCard({ property: p }: { property: Property }) {
   return (
-    <Link
-      href={`/immobilien/${p.slug}`}
-      className="group block overflow-hidden rounded-sm border border-ivory-100 bg-white transition-shadow hover:shadow-lg"
-    >
-      <div className="relative flex aspect-[4/3] items-center justify-center bg-navy-900 text-sm text-gold-500/60">
-        Bild folgt
-        <span className="absolute left-3 top-3 bg-gold-500 px-2 py-1 text-xs font-medium uppercase tracking-wide text-navy-950">
-          {p.status}
-        </span>
-      </div>
-      <div className="space-y-2 p-5">
-        <p className="text-xs uppercase tracking-wider text-stone-500">
-          {p.postalCode} {p.city}, {p.district}
-        </p>
-        <h3 className="font-serif text-2xl leading-tight group-hover:text-gold-600">
-          {p.title}
-        </h3>
-        <p className="text-sm text-navy-700">
-          {formatArea(p.livingArea)} · {formatRooms(p.rooms)}
-        </p>
-        <p className="pt-2 font-serif text-2xl text-gold-600">
-          {formatPrice(p.price)}
-        </p>
-      </div>
-    </Link>
+    <Card sx={{ height: "100%", "&:hover": { boxShadow: 6, borderColor: "secondary.main" } }}>
+      <LinkCardActionArea href={`/immobilien/${p.slug}`} sx={{ height: "100%", alignItems: "flex-start" }}>
+        <Box
+          sx={{
+            position: "relative",
+            aspectRatio: "4 / 3",
+            display: "grid",
+            placeItems: "center",
+            color: "secondary.main",
+            fontSize: 13,
+            background: "linear-gradient(135deg, #172a52, #0f1f3d)",
+          }}
+        >
+          Bild folgt
+          <Chip
+            label={p.status}
+            size="small"
+            color="secondary"
+            sx={{ position: "absolute", top: 12, left: 12, textTransform: "capitalize" }}
+          />
+        </Box>
+        <CardContent sx={{ p: 2.5 }}>
+          <Typography variant="overline" color="text.secondary">
+            {p.postalCode} {p.city}, {p.district}
+          </Typography>
+          <Typography variant="h6" component="h3" sx={{ mt: 0.5 }}>
+            {p.title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            {formatArea(p.livingArea)} · {formatRooms(p.rooms)}
+          </Typography>
+          <Typography variant="h5" sx={{ mt: 2, color: "secondary.dark" }}>
+            {formatPrice(p.price)}
+          </Typography>
+        </CardContent>
+      </LinkCardActionArea>
+    </Card>
   );
 }

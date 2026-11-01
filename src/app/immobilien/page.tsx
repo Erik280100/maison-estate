@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { isLive } from "@/lib/site-mode";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Container } from "@/components/layout/Container";
+import { Footer } from "@/components/layout/Footer";
+import { Header } from "@/components/layout/Header";
 import { PropertyGrid } from "@/components/properties/PropertyGrid";
 import { getProperties } from "@/lib/properties";
+import { isLive } from "@/lib/site-mode";
 
 export const metadata: Metadata = {
   title: "Immobilien",
@@ -18,15 +20,17 @@ export default async function ImmobilienPage() {
   return (
     <>
       <Header />
-      <main className="flex-1 py-12">
+      <Box component="main" sx={{ flex: 1, py: { xs: 5, md: 8 } }}>
         <Container>
-          <h1 className="font-serif text-4xl sm:text-5xl">Unsere Immobilien</h1>
-          <p className="mt-3 mb-10 text-stone-500">
+          <Typography variant="h2" component="h1" sx={{ fontSize: { xs: "2.25rem", md: "3rem" } }}>
+            Unsere Immobilien
+          </Typography>
+          <Typography color="text.secondary" sx={{ mt: 1.5, mb: 6 }}>
             Aktuell verfügbare Wohnungen im Überblick.
-          </p>
+          </Typography>
           <PropertyGrid properties={properties} />
         </Container>
-      </main>
+      </Box>
       <Footer tone="light" />
     </>
   );

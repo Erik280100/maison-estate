@@ -1,5 +1,8 @@
-import Link from "next/link";
+import AppBar from "@mui/material/AppBar";
+import Stack from "@mui/material/Stack";
+import Toolbar from "@mui/material/Toolbar";
 import { Logo } from "@/components/brand/Logo";
+import { AppLink } from "@/components/ui/AppLink";
 import { Container } from "./Container";
 
 const nav = [
@@ -10,23 +13,26 @@ const nav = [
 
 export function Header() {
   return (
-    <header className="bg-navy-900 text-gold-500">
-      <Container className="flex items-center justify-between py-4">
-        <Link href="/" aria-label="Maison Estate – Startseite">
-          <Logo variant="emblem" className="h-12 w-auto" />
-        </Link>
-        <nav className="flex gap-6 text-sm" aria-label="Hauptnavigation">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-gold-300 transition-colors hover:text-gold-500"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+    <AppBar position="static" color="primary">
+      <Container>
+        <Toolbar disableGutters sx={{ justifyContent: "space-between", py: 1 }}>
+          <AppLink href="/" aria-label="Maison Estate – Startseite" sx={{ display: "flex" }}>
+            <Logo variant="emblem" className="h-12 w-auto" />
+          </AppLink>
+          <Stack component="nav" aria-label="Hauptnavigation" direction="row" spacing={3}>
+            {nav.map((item) => (
+              <AppLink
+                key={item.href}
+                href={item.href}
+                variant="body2"
+                sx={{ color: "secondary.light", fontWeight: 600, "&:hover": { color: "secondary.main" } }}
+              >
+                {item.label}
+              </AppLink>
+            ))}
+          </Stack>
+        </Toolbar>
       </Container>
-    </header>
+    </AppBar>
   );
 }

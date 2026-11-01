@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Box from "@mui/material/Box";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? process.env.BASE_PATH ?? "";
 
@@ -32,13 +33,21 @@ export function HtmlRechner({ file, title }: { file: string; title: string }) {
   useEffect(() => () => observer.current?.disconnect(), []);
 
   return (
-    <iframe
+    <Box
+      component="iframe"
       ref={ref}
       src={`${basePath}/rechner/${file}`}
       title={title}
       onLoad={onLoad}
-      style={{ height }}
-      className="w-full border border-ivory-100 bg-white"
+      sx={{
+        display: "block",
+        width: "100%",
+        height,
+        border: 1,
+        borderColor: "divider",
+        borderRadius: 3,
+        bgcolor: "background.paper",
+      }}
     />
   );
 }

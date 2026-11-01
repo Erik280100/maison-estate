@@ -1,11 +1,33 @@
 "use client";
 
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import Chip from "@mui/material/Chip";
+import CircularProgress from "@mui/material/CircularProgress";
+import Grid from "@mui/material/Grid";
+import Stack from "@mui/material/Stack";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableRow from "@mui/material/TableRow";
+import Typography from "@mui/material/Typography";
+import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
+import { AppLink } from "@/components/ui/AppLink";
 import { formatArea, formatPrice } from "@/lib/format";
 import { loadObjekt } from "./api";
 import { LABELS, type Objekt } from "./types";
+
+const back = (
+  <AppLink
+    href="/intern/objekte/"
+    variant="body2"
+    sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, color: "secondary.dark" }}
+  >
+    <ArrowBackRounded fontSize="small" /> Alle Objekte
+  </AppLink>
+);
 
 export function ObjektDetail() {
   const id = useSearchParams().get("id");
@@ -21,30 +43,24 @@ export function ObjektDetail() {
   }, [id]);
 
   // undefined = lädt noch, null = nicht gefunden
-  const objekt: Objekt | null | undefined = !id
-    ? null
-    : loaded?.id === id
-      ? loaded.objekt
-      : undefined;
+  const objekt: Objekt | null | undefined = !id ? null : loaded?.id === id ? loaded.objekt : undefined;
 
-  const back = (
-    <Link href="/intern/objekte/" className="text-sm text-gold-600 hover:underline">
-      ← Alle Objekte
-    </Link>
-  );
-
-  if (objekt === undefined) return <p className="text-stone-500">Wird geladen …</p>;
+  if (objekt === undefined)
+    return (
+      <Box sx={{ display: "grid", placeItems: "center", minHeight: "40vh" }}>
+        <CircularProgress color="secondary" />
+      </Box>
+    );
   if (objekt === null)
     return (
       <>
         {back}
-        <p className="mt-6">Objekt nicht gefunden.</p>
+        <Typography sx={{ mt: 3 }}>Objekt nicht gefunden.</Typography>
       </>
     );
 
   const o = objekt;
   const facts: [string, string][] = [
-    ["Status", LABELS[o.status]],
     ["Objekttyp", LABELS[o.objekttyp]],
     ["Kaufpreis", formatPrice(o.preis)],
     ["Preis pro m²", formatPrice(Math.round(o.preis / o.wohnflaeche))],
@@ -59,23 +75,50 @@ export function ObjektDetail() {
   return (
     <>
       {back}
-      <h1 className="mt-4 font-serif text-4xl">{o.titel}</h1>
-      <div className="mt-8 grid gap-10 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <div className="flex aspect-[16/10] items-center justify-center bg-navy-900 text-gold-500/60">
+      <Stack direction="row" sx={{ mt: 2, alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+        <Typography variant="h3" component="h1">
+          {o.titel}
+        </Typography>
+        <Chip
+          label={LABELS[o.status]}
+          color={o.status === "verfuegbar" ? "success" : o.status === "reserviert" ? "warning" : "default"}
+        />
+      </Stack>
+      <Grid container spacing={4} sx={{ mt: 1 }}>
+        <Grid size={{ xs: 12, lg: 8 }}>
+          <Box
+            sx={{
+              aspectRatio: "16 / 10",
+              display: "grid",
+              placeItems: "center",
+              borderRadius: 3,
+              color: "secondary.main",
+              background: "linear-gradient(135deg, #172a52, #0f1f3d)",
+            }}
+          >
             Fotos folgen
-          </div>
-          {o.beschreibung && <p className="mt-8 leading-relaxed">{o.beschreibung}</p>}
-        </div>
-        <dl className="h-fit divide-y divide-ivory-100 border border-ivory-100 bg-white">
-          {facts.map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-4 px-5 py-3 text-sm">
-              <dt className="text-stone-500">{k}</dt>
-              <dd className="text-right font-medium">{v}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
+          </Box>
+          {o.beschreibung && (
+            <Typography sx={{ mt: 4, lineHeight: 1.8 }}>{o.beschreibung}</Typography>
+          )}
+        </Grid>
+        <Grid size={{ xs: 12, lg: 4 }}>
+          <Card>
+            <Table size="medium">
+              <TableBody>
+                {facts.map(([k, v]) => (
+                  <TableRow key={k} sx={{ "&:last-child td": { border: 0 } }}>
+                    <TableCell sx={{ color: "text.secondary", width: "45%" }}>{k}</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                      {v}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </Grid>
+      </Grid>
     </>
   );
 }

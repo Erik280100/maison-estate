@@ -1,8 +1,15 @@
-export function GoldDivider({ className = "" }: { className?: string }) {
+import Box from "@mui/material/Box";
+
+export function GoldDivider() {
   return (
-    <div
+    <Box
       aria-hidden
-      className={`h-px w-24 bg-gradient-to-r from-transparent via-gold-500 to-transparent ${className}`}
+      sx={{
+        height: 2,
+        width: 72,
+        borderRadius: 1,
+        background: "linear-gradient(90deg, transparent, #c2a467, transparent)",
+      }}
     />
   );
 }
