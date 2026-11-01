@@ -15,6 +15,9 @@ function Bar() {
           <Link href="/intern/" className="font-serif text-xl text-gold-500">
             Maison Estate intern
           </Link>
+          <Link href="/intern/objekte/" className="hover:text-gold-500">
+            Objekte
+          </Link>
           <Link href="/intern/rechner/" className="hover:text-gold-500">
             Rechner
           </Link>
