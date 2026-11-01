@@ -18,6 +18,7 @@ import { brand, darkTheme } from "@/theme/theme";
 const links = [
   { href: "/intern/objekte/", label: "Objekte" },
   { href: "/intern/rechner/", label: "Rechner" },
+  { href: "/intern/buchhaltung/", label: "Buchhaltung" },
 ];
 
 function Bar() {

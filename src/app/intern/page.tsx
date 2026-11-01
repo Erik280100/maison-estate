@@ -2,6 +2,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
+import AccountBalanceRounded from "@mui/icons-material/AccountBalanceRounded";
 import ApartmentRounded from "@mui/icons-material/ApartmentRounded";
 import CalculateRounded from "@mui/icons-material/CalculateRounded";
 import { LinkCardActionArea } from "@/components/ui/AppLink";
@@ -14,6 +15,13 @@ const tiles = [
     title: "Objekte",
     text: "Immobilien suchen und filtern nach Ort, PLZ, Preis, Fläche, Zimmer, Typ und Ausstattung.",
     icon: <ApartmentRounded />,
+  },
+  {
+    href: "/intern/buchhaltung/",
+    kicker: "Finanzen",
+    title: "Buchhaltung",
+    text: "Belege erfassen und buchen, Kontoauszüge, Kredite, Journal, Saldenliste und Umsatzsteuer.",
+    icon: <AccountBalanceRounded />,
   },
   ...rechner.map((r) => ({
     href: `/intern/rechner/${r.slug}/`,
