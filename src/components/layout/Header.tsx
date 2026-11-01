@@ -13,7 +13,7 @@ export function Header() {
     <header className="bg-navy-900 text-gold-500">
       <Container className="flex items-center justify-between py-4">
         <Link href="/" aria-label="Maison Estate – Startseite">
-          <Logo variant="emblem" className="h-12 w-24" />
+          <Logo variant="emblem" className="h-12 w-auto" />
         </Link>
         <nav className="flex gap-6 text-sm" aria-label="Hauptnavigation">
           {nav.map((item) => (

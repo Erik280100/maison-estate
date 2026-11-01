@@ -9,7 +9,8 @@ export default function ComingSoonPage() {
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
         <div className="animate-fade-up">
           <Logo
-            className="mx-auto w-64 sm:w-80 md:w-96"
+            className="mx-auto h-auto w-64 sm:w-72"
+            priority
             showLegalForm={phase === "eingetragen"}
           />
         </div>
