@@ -1,9 +1,14 @@
 import type { NextConfig } from "next";
 
+// GitHub Pages: statischer Export. Bei Projektseiten ohne eigene Domain
+// (https://<user>.github.io/<repo>) BASE_PATH=/<repo> setzen.
+const basePath = process.env.BASE_PATH || undefined;
+
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  output: "export",
+  trailingSlash: true,
+  basePath,
+  images: { unoptimized: true },
   turbopack: {
     rules: {
       "*.css": {

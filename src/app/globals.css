@@ -1,26 +1,52 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Maison Estate – Farbsystem (aus dem Logo abgeleitet) */
+@theme {
+  --color-navy-950: #0a1530;
+  --color-navy-900: #0f1f3d;
+  --color-navy-800: #172a52;
+  --color-navy-700: #22396b;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-gold-300: #e3cf9f;
+  --color-gold-400: #d4b97f;
+  --color-gold-500: #c2a467;
+  --color-gold-600: #a3884f;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-ivory-50: #faf7f0;
+  --color-ivory-100: #f2ece0;
+
+  --color-stone-500: #8a8f9c;
+
+  --font-serif: var(--font-cormorant), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  --animate-fade-up: fade-up 1.2s ease-out both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
+html {
+  background: var(--color-navy-900);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-ivory-50);
+  color: var(--color-navy-900);
+  font-family: var(--font-sans);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
 }

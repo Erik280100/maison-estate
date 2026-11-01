@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Maison Estate GmbH – Website
 
-## Getting Started
+Next.js (App Router) + Tailwind CSS v4.
 
-First, run the development server:
+## Start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Coming-Soon-Schalter
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`.env.local` → `SITE_MODE=coming-soon` (Standard) oder `SITE_MODE=live`.
+Der Schalter wirkt beim Bauen (statischer Export, `src/lib/site-mode.ts`): Im Coming-Soon-Modus leiten `/immobilien` und Detailseiten auf `/` um.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Farben (`src/app/globals.css`)
 
-## Learn More
+| Token | Hex | Verwendung |
+|---|---|---|
+| navy-900 / 950 | #0f1f3d / #0a1530 | Marke, Header, Hero |
+| gold-500 | #c2a467 | Akzent, Linien, Buttons |
+| gold-300 | #e3cf9f | Headlines auf Navy |
+| ivory-50 | #faf7f0 | Content-Flächen, Immobilienliste |
 
-To learn more about Next.js, take a look at the following resources:
+Schriften: Cormorant Garamond (Headlines), Inter (Text).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Immobilien
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Datenzugriff nur über `src/lib/properties.ts` (aktuell Mock-Daten in `src/data/`).
+Später durch CMS/Datenbank ersetzen.
 
-## Deploy on Vercel
+## Offen
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Logo: `src/components/brand/Logo.tsx` ist ein nachgezeichneter SVG-Platzhalter → offizielles Vektor-Logo einsetzen.
+- Impressum/Datenschutz: `[TODO]`-Felder ausfüllen.
+- Seiten `/verkaufen`, `/ueber-uns` (im Header verlinkt) fehlen noch.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment: GitHub Pages (GitHub Actions)
+
+Workflow: `.github/workflows/deploy.yml` (Push auf `main` baut `out/` und veröffentlicht).
+
+Einmalig einrichten:
+1. Repository auf GitHub anlegen und pushen. Hinweis: Pages aus **privaten** Repos braucht einen bezahlten GitHub-Plan.
+2. Settings → Pages → **Source: GitHub Actions**.
+3. Settings → Secrets and variables → Actions → **Variables** (alle optional):
+   | Variable | Standard | Zweck |
+   |---|---|---|
+   | `SITE_MODE` | `coming-soon` | `live` schaltet Immobilien-Seiten frei |
+   | `ALLOW_INDEXING` | `false` | `true` erlaubt Google |
+   | `BASE_PATH` | leer | `/<repo-name>`, wenn keine eigene Domain genutzt wird (`https://<user>.github.io/<repo>`) |
+4. Eigene Domain: Settings → Pages → Custom domain, DNS-CNAME auf `<user>.github.io`, "Enforce HTTPS" aktivieren. Dann `BASE_PATH` leer lassen.
+
+Lokal testen: `npm run build`, dann `npx serve out`.
+Grenzen: kein Server (kein Proxy, keine API-Routes). Formulare später über externen Dienst, Objektdaten per Build oder Client-Fetch.
