@@ -86,6 +86,22 @@ export default function DatenschutzPage() {
       </section>
 
       <section>
+        <h2>4a. Login für Mitarbeitende (interner Bereich)</h2>
+        <p>
+          Für den internen Bereich verarbeiten wir E-Mail-Adresse, Passwort
+          (nur als Hash), Zeitpunkt der Anmeldung und IP-Adresse. Der Zugang
+          wird ausschließlich vom Unternehmen vergeben. Dienstleister ist
+          Supabase (Authentifizierung und Datenbank, [TODO: Region, z. B. EU
+          Frankfurt, und Auftragsverarbeitungsvertrag prüfen]).
+        </p>
+        <ul>
+          <li>Rechtsgrundlage: Durchführung des Beschäftigungs- bzw. Auftragsverhältnisses sowie berechtigtes Interesse an der Systemsicherheit (Art. 6 Abs. 1 lit. b und f DSGVO)</li>
+          <li>Speicherdauer: bis zur Deaktivierung des Zugangs, Logdaten kurzfristig</li>
+          <li>Im Browser wird ein technisch notwendiges Sitzungstoken im lokalen Speicher abgelegt; es ist für den Login erforderlich und nicht einwilligungspflichtig (§ 165 Abs. 3 TKG 2021).</li>
+        </ul>
+      </section>
+
+      <section>
         <h2>5. Kontaktaufnahme per E-Mail oder Telefon</h2>
         <p>
           Wenn Sie uns kontaktieren, verarbeiten wir Ihre Angaben zur

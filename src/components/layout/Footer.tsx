@@ -17,6 +17,9 @@ export function Footer({ tone = "dark" }: { tone?: "dark" | "light" }) {
           <Link href="/datenschutz" className="hover:text-gold-500 transition-colors">
             Datenschutz
           </Link>
+          <Link href="/login" className="hover:text-gold-500 transition-colors">
+            Login
+          </Link>
         </nav>
       </div>
     </footer>

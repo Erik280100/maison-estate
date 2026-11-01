@@ -53,3 +53,16 @@ Einmalig einrichten:
 
 Lokal testen: `npm run build`, dann `npx serve out`.
 Grenzen: kein Server (kein Proxy, keine API-Routes). Formulare später über externen Dienst, Objektdaten per Build oder Client-Fetch.
+
+## Login und interner Bereich (Supabase Auth)
+
+- `/login` meldet per E-Mail/Passwort an, `/intern/` ist nur eingeloggt sichtbar (noindex).
+- Rechner: Komponente in `src/features/rechner/` anlegen und in `registry.ts` eintragen.
+- Sicherheit: Die Sperre wirkt im Browser. Der Code der Rechner ist im öffentlichen Build enthalten. **Vertrauliche Daten gehören in Supabase mit Row Level Security**, nicht in den Code.
+
+Einrichtung:
+1. Projekt auf supabase.com anlegen (Region EU/Frankfurt).
+2. Authentication → Providers → Email: **"Allow new users to sign up" ausschalten** (Selbstregistrierung aus), Passwortlänge mind. 12.
+3. Team per Authentication → Users → Invite/Add user anlegen.
+4. Project Settings → API: `URL` und `anon public key` als Repository-Variablen `NEXT_PUBLIC_SUPABASE_URL` und `NEXT_PUBLIC_SUPABASE_ANON_KEY` setzen (lokal in `.env.local`).
+5. Authentication → URL Configuration: Site URL `https://maison-estate.at`.

@@ -32,6 +32,9 @@ jobs:
           SITE_MODE: ${{ vars.SITE_MODE || 'coming-soon' }}
           ALLOW_INDEXING: ${{ vars.ALLOW_INDEXING || 'false' }}
           BASE_PATH: ${{ vars.BASE_PATH }}
+          # Öffentliche Supabase-Werte (Anon-Key ist für den Browser gedacht)
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out
