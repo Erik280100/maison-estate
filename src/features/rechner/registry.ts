@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import { AnkaufVerkaufRechner } from "./AnkaufVerkaufRechner";
+import { KreditRechner } from "./KreditRechner";
 
 export type Rechner = {
   slug: string;
@@ -15,6 +16,13 @@ export type Rechner = {
  * und hier eintragen. Sie erscheinen automatisch im internen Bereich.
  */
 export const rechner: Rechner[] = [
+  {
+    slug: "kredit",
+    title: "Finanzierungsrechner",
+    description:
+      "Kauf- und Kreditnebenkosten, Kreditbetrag, Tilgungsplan, Effektivzins und AfA – optional mit FLV als Tilgungsträger.",
+    Component: KreditRechner,
+  },
   {
     slug: "ankauf-verkauf",
     title: "Ankauf, Sanierung & Verkauf",
