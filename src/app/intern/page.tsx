@@ -4,6 +4,7 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import AccountBalanceRounded from "@mui/icons-material/AccountBalanceRounded";
 import ApartmentRounded from "@mui/icons-material/ApartmentRounded";
+import ChecklistRounded from "@mui/icons-material/ChecklistRounded";
 import CalculateRounded from "@mui/icons-material/CalculateRounded";
 import { LinkCardActionArea } from "@/components/ui/AppLink";
 import { rechner } from "@/features/rechner/registry";
@@ -15,6 +16,13 @@ const tiles = [
     title: "Objekte",
     text: "Immobilien suchen und filtern nach Ort, PLZ, Preis, Fläche, Zimmer, Typ und Ausstattung.",
     icon: <ApartmentRounded />,
+  },
+  {
+    href: "/intern/todos/",
+    kicker: "Team",
+    title: "To-dos",
+    text: "Offene Aufgaben im Board: in Spalten verschieben, Personen zuweisen, Beginn und Abschluss terminieren.",
+    icon: <ChecklistRounded />,
   },
   {
     href: "/intern/buchhaltung/",

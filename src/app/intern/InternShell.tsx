@@ -17,6 +17,7 @@ import { brand, darkTheme } from "@/theme/theme";
 
 const links = [
   { href: "/intern/objekte/", label: "Objekte" },
+  { href: "/intern/todos/", label: "To-dos" },
   { href: "/intern/rechner/", label: "Rechner" },
   { href: "/intern/buchhaltung/", label: "Buchhaltung" },
 ];
