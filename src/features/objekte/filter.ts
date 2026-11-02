@@ -8,7 +8,9 @@ import {
   type Zustand,
 } from "./types";
 
-export type SortKey = "neueste" | "preis-auf" | "preis-ab" | "flaeche-ab";
+import { finanzierung } from "./finanzierung";
+
+export type SortKey = "neueste" | "preis-auf" | "preis-ab" | "flaeche-ab" | "zuzahlung-auf";
 
 export type Filter = {
   /** Freitext: jedes Wort muss irgendwo im Objekt vorkommen (Titel, Ort, PLZ, Preis, Fläche, …) */
@@ -20,6 +22,9 @@ export type Filter = {
   preisBis: string;
   flaecheVon: string;
   flaecheBis: string;
+  /** Monatliche Zuzahlung (Kreditrate − Miete) in €, negativ = Überschuss */
+  zuzahlungVon: string;
+  zuzahlungBis: string;
   /** "5" bedeutet 5 und mehr Zimmer */
   zimmer: string[];
   objekttypen: Objekttyp[];
@@ -38,6 +43,8 @@ export const emptyFilter: Filter = {
   preisBis: "",
   flaecheVon: "",
   flaecheBis: "",
+  zuzahlungVon: "",
+  zuzahlungBis: "",
   zimmer: [],
   objekttypen: [],
   freiflaechen: [],
@@ -96,6 +103,7 @@ function haystack(o: Objekt): string {
     String(o.wohnflaeche).replace(".", ","),
     String(o.zimmer),
     `${o.zimmer} zimmer`,
+    o.miete != null ? String(o.miete) : "",
     String(Math.round(o.preis / o.wohnflaeche)),
     // Bezeichnungen
     LABELS[o.objekttyp],
@@ -118,6 +126,8 @@ export function applyFilter(list: Objekt[], f: Filter): Objekt[] {
   const preisBis = num(f.preisBis);
   const flaecheVon = num(f.flaecheVon);
   const flaecheBis = num(f.flaecheBis);
+  const zuzVon = num(f.zuzahlungVon);
+  const zuzBis = num(f.zuzahlungBis);
   const ort = norm(f.ort.trim());
   const plzs = f.plz.split(/[\s,;]+/).filter(Boolean);
 
@@ -134,6 +144,12 @@ export function applyFilter(list: Objekt[], f: Filter): Objekt[] {
     if (preisBis !== null && o.preis > preisBis) return false;
     if (flaecheVon !== null && o.wohnflaeche < flaecheVon) return false;
     if (flaecheBis !== null && o.wohnflaeche > flaecheBis) return false;
+    if (zuzVon !== null || zuzBis !== null) {
+      const z = finanzierung(o).zuzahlung;
+      if (z === null) return false;
+      if (zuzVon !== null && z < zuzVon) return false;
+      if (zuzBis !== null && z > zuzBis) return false;
+    }
     if (f.zimmer.length) {
       const key = o.zimmer >= 5 ? "5" : String(Math.floor(o.zimmer));
       if (!f.zimmer.includes(key)) return false;
@@ -157,13 +173,15 @@ export function applyFilter(list: Objekt[], f: Filter): Objekt[] {
     "preis-auf": (a, b) => a.preis - b.preis,
     "preis-ab": (a, b) => b.preis - a.preis,
     "flaeche-ab": (a, b) => b.wohnflaeche - a.wohnflaeche,
+    "zuzahlung-auf": (a, b) =>
+      (finanzierung(a).zuzahlung ?? Infinity) - (finanzierung(b).zuzahlung ?? Infinity) || 0,
   };
   return result.sort(sorters[f.sort]);
 }
 
 export function activeFilterCount(f: Filter): number {
   return (
-    [f.suche, f.ort, f.plz, f.preisVon, f.preisBis, f.flaecheVon, f.flaecheBis].filter(
+    [f.suche, f.ort, f.plz, f.preisVon, f.preisBis, f.flaecheVon, f.flaecheBis, f.zuzahlungVon, f.zuzahlungBis].filter(
       (s) => s.trim() !== "",
     ).length +
     f.zimmer.length +

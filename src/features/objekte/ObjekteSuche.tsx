@@ -28,6 +28,7 @@ import { LinkCardActionArea } from "@/components/ui/AppLink";
 import { formatArea, formatPrice } from "@/lib/format";
 import { loadObjekte, type LoadResult } from "./api";
 import { activeFilterCount, applyFilter, emptyFilter, type Filter, type SortKey } from "./filter";
+import { finanzierung } from "./finanzierung";
 import { FilterPanel } from "./FilterPanel";
 import { LABELS, type Objekt, type ObjektStatus } from "./types";
 
@@ -45,6 +46,7 @@ function ObjektZeile({ o }: { o: Objekt }) {
     ...o.parken.map((x) => LABELS[x]),
     ...o.ausstattung.map((x) => LABELS[x]),
   ];
+  const fin = finanzierung(o);
   const MAX = 7;
   const tags = alle.length > MAX ? [...alle.slice(0, MAX), `+${alle.length - MAX}`] : alle;
   return (
@@ -110,6 +112,24 @@ function ObjektZeile({ o }: { o: Objekt }) {
               <Typography variant="caption" color="text.secondary">
                 {formatPrice(Math.round(o.preis / o.wohnflaeche))} / m²
               </Typography>
+              <Box sx={{ mt: 1.5 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Ø Miete:{" "}
+                  <strong>{fin.miete == null ? "–" : `${formatPrice(fin.miete)} / Mon.`}</strong>
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Kreditrate: <strong>{formatPrice(Math.round(fin.rate))} / Mon.</strong>
+                </Typography>
+                {fin.zuzahlung !== null && (
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600, color: fin.zuzahlung <= 0 ? "success.main" : "warning.main" }}
+                  >
+                    {fin.zuzahlung <= 0 ? "Überschuss" : "Zuzahlung"}:{" "}
+                    {formatPrice(Math.abs(Math.round(fin.zuzahlung)))} / Mon.
+                  </Typography>
+                )}
+              </Box>
             </Box>
           </Box>
         </Box>
@@ -232,6 +252,7 @@ export function ObjekteSuche() {
             <MenuItem value="preis-auf">Preis aufsteigend</MenuItem>
             <MenuItem value="preis-ab">Preis absteigend</MenuItem>
             <MenuItem value="flaeche-ab">Wohnfläche absteigend</MenuItem>
+            <MenuItem value="zuzahlung-auf">Geringste Zuzahlung zuerst</MenuItem>
           </Select>
         </FormControl>
       </Stack>

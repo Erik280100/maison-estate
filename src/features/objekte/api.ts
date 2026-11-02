@@ -21,6 +21,8 @@ type Row = {
   ausstattung?: Objekt["ausstattung"] | null;
   /** Fehlt, solange Migration 005 noch nicht ausgeführt wurde */
   zustand?: Objekt["zustand"];
+  /** Fehlt, solange Migration 009 noch nicht ausgeführt wurde */
+  miete?: number | string | null;
   beschreibung: string | null;
 };
 
@@ -40,6 +42,7 @@ const fromRow = (r: Row): Objekt => ({
   parken: r.parken ?? [],
   ausstattung: r.ausstattung ?? [],
   zustand: r.zustand ?? null,
+  miete: r.miete == null ? null : Number(r.miete),
   beschreibung: r.beschreibung,
   createdAt: r.created_at,
 });

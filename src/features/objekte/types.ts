@@ -112,6 +112,8 @@ export type Objekt = {
   parken: Parkplatz[];
   ausstattung: AusstattungGespeichert[];
   zustand: Zustand | null;
+  /** Durchschnittlich erzielbare Monatsmiete in € (null = unbekannt) */
+  miete: number | null;
   beschreibung: string | null;
   createdAt: string;
 };

@@ -17,6 +17,7 @@ import TextField from "@mui/material/TextField";
 import PlaceRounded from "@mui/icons-material/PlaceRounded";
 import SearchRounded from "@mui/icons-material/SearchRounded";
 import type { Filter } from "./filter";
+import { REFERENZ_HINWEIS } from "./finanzierung";
 import { MultiCheckDropdown } from "./MultiCheckDropdown";
 import {
   AUSSTATTUNG,
@@ -38,7 +39,9 @@ function Range({
   to,
   onFrom,
   onTo,
+  allowNegative = false,
 }: {
+  allowNegative?: boolean;
   label: string;
   unit: string;
   from: string;
@@ -58,14 +61,14 @@ function Range({
           label="von"
           value={from}
           onChange={(e) => onFrom(e.target.value)}
-          slotProps={{ htmlInput: { min: 0, inputMode: "decimal" }, input: adornment }}
+          slotProps={{ htmlInput: { min: allowNegative ? undefined : 0, inputMode: "decimal" }, input: adornment }}
         />
         <TextField
           type="number"
           label="bis"
           value={to}
           onChange={(e) => onTo(e.target.value)}
-          slotProps={{ htmlInput: { min: 0, inputMode: "decimal" }, input: adornment }}
+          slotProps={{ htmlInput: { min: allowNegative ? undefined : 0, inputMode: "decimal" }, input: adornment }}
         />
       </Stack>
     </FormControl>
@@ -257,6 +260,20 @@ export function FilterPanel({
             onFrom={(v) => set("flaecheVon", v)}
             onTo={(v) => set("flaecheBis", v)}
           />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+          <Range
+            label="Monatliche Zuzahlung"
+            unit="€/Mon."
+            allowNegative
+            from={filter.zuzahlungVon}
+            to={filter.zuzahlungBis}
+            onFrom={(v) => set("zuzahlungVon", v)}
+            onTo={(v) => set("zuzahlungBis", v)}
+          />
+          <FormLabel sx={{ display: "block", mt: 0.5, fontSize: 12 }}>
+            {REFERENZ_HINWEIS}. Negativ = Überschuss. Nur Objekte mit eingetragener Miete.
+          </FormLabel>
         </Grid>
         <Grid size={{ xs: 12, sm: 4, lg: 2 }}>
           <CheckGroup<Objekttyp>

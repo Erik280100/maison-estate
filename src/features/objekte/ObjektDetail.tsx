@@ -17,6 +17,7 @@ import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
 import { AppLink } from "@/components/ui/AppLink";
 import { formatArea, formatPrice } from "@/lib/format";
 import { loadObjekt } from "./api";
+import { finanzierung, REFERENZ_HINWEIS } from "./finanzierung";
 import { LABELS, type Objekt } from "./types";
 
 const back = (
@@ -60,11 +61,22 @@ export function ObjektDetail() {
     );
 
   const o = objekt;
+  const fin = finanzierung(o);
   const facts: [string, string][] = [
     ["Objekttyp", LABELS[o.objekttyp]],
     ["Zustand", o.zustand ? LABELS[o.zustand] : "–"],
     ["Kaufpreis", formatPrice(o.preis)],
     ["Preis pro m²", formatPrice(Math.round(o.preis / o.wohnflaeche))],
+    ["Ø Miete", fin.miete == null ? "–" : `${formatPrice(fin.miete)} / Monat`],
+    ["Kreditrate*", `${formatPrice(Math.round(fin.rate))} / Monat`],
+    [
+      "Monatliche Zuzahlung*",
+      fin.zuzahlung == null
+        ? "–"
+        : fin.zuzahlung <= 0
+          ? `Überschuss ${formatPrice(Math.abs(Math.round(fin.zuzahlung)))}`
+          : formatPrice(Math.round(fin.zuzahlung)),
+    ],
     ["Wohnfläche", formatArea(o.wohnflaeche)],
     ["Zimmer", String(o.zimmer)],
     ["Lage", `${o.plz} ${o.ort}${o.bezirk ? `, ${o.bezirk}` : ""}`],
@@ -119,6 +131,9 @@ export function ObjektDetail() {
               </TableBody>
             </Table>
           </Card>
+          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+            * {REFERENZ_HINWEIS}
+          </Typography>
         </Grid>
       </Grid>
     </>
