@@ -17,7 +17,6 @@ import TextField from "@mui/material/TextField";
 import PlaceRounded from "@mui/icons-material/PlaceRounded";
 import SearchRounded from "@mui/icons-material/SearchRounded";
 import type { Filter } from "./filter";
-import { REFERENZ_HINWEIS } from "./finanzierung";
 import { MultiCheckDropdown } from "./MultiCheckDropdown";
 import {
   AUSSTATTUNG,
@@ -271,9 +270,6 @@ export function FilterPanel({
             onFrom={(v) => set("zuzahlungVon", v)}
             onTo={(v) => set("zuzahlungBis", v)}
           />
-          <FormLabel sx={{ display: "block", mt: 0.5, fontSize: 12 }}>
-            {REFERENZ_HINWEIS}. Negativ = Überschuss. Nur Objekte mit eingetragener Miete.
-          </FormLabel>
         </Grid>
         <Grid size={{ xs: 12, sm: 4, lg: 2 }}>
           <CheckGroup<Objekttyp>
