@@ -270,6 +270,17 @@ export function FilterPanel({
             onFrom={(v) => set("zuzahlungVon", v)}
             onTo={(v) => set("zuzahlungBis", v)}
           />
+          <FormControlLabel
+            label="Cashflow positiv"
+            control={
+              <Checkbox
+                size="small"
+                color="secondary"
+                checked={filter.cashflowPositiv}
+                onChange={(e) => set("cashflowPositiv", e.target.checked)}
+              />
+            }
+          />
         </Grid>
         <Grid size={{ xs: 12, sm: 4, lg: 2 }}>
           <CheckGroup<Objekttyp>

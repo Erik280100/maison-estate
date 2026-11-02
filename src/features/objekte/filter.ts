@@ -25,6 +25,8 @@ export type Filter = {
   /** Monatliche Zuzahlung (Kreditrate − Miete) in €, negativ = Überschuss */
   zuzahlungVon: string;
   zuzahlungBis: string;
+  /** Nur Objekte, bei denen die Miete die Kreditrate deckt (Zuzahlung ≤ 0) */
+  cashflowPositiv: boolean;
   /** "5" bedeutet 5 und mehr Zimmer */
   zimmer: string[];
   objekttypen: Objekttyp[];
@@ -45,6 +47,7 @@ export const emptyFilter: Filter = {
   flaecheBis: "",
   zuzahlungVon: "",
   zuzahlungBis: "",
+  cashflowPositiv: false,
   zimmer: [],
   objekttypen: [],
   freiflaechen: [],
@@ -144,9 +147,10 @@ export function applyFilter(list: Objekt[], f: Filter): Objekt[] {
     if (preisBis !== null && o.preis > preisBis) return false;
     if (flaecheVon !== null && o.wohnflaeche < flaecheVon) return false;
     if (flaecheBis !== null && o.wohnflaeche > flaecheBis) return false;
-    if (zuzVon !== null || zuzBis !== null) {
+    if (zuzVon !== null || zuzBis !== null || f.cashflowPositiv) {
       const z = finanzierung(o).zuzahlung;
       if (z === null) return false;
+      if (f.cashflowPositiv && z > 0) return false;
       if (zuzVon !== null && z < zuzVon) return false;
       if (zuzBis !== null && z > zuzBis) return false;
     }
@@ -184,6 +188,7 @@ export function activeFilterCount(f: Filter): number {
     [f.suche, f.ort, f.plz, f.preisVon, f.preisBis, f.flaecheVon, f.flaecheBis, f.zuzahlungVon, f.zuzahlungBis].filter(
       (s) => s.trim() !== "",
     ).length +
+    (f.cashflowPositiv ? 1 : 0) +
     f.zimmer.length +
     f.objekttypen.length +
     f.freiflaechen.length +
