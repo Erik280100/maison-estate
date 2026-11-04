@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import { AnkaufVerkaufRechner } from "./AnkaufVerkaufRechner";
 import { KreditRechner } from "./KreditRechner";
+import { MieteRechner } from "./MieteRechner";
 
 export type Rechner = {
   slug: string;
@@ -47,6 +48,6 @@ export const rechner: Rechner[] = [
     slug: "mietrechner",
     title: "Mietrechner",
     description: "Mietrendite, Cashflow und DSCR für Bestandsobjekte inkl. PDF/Excel-Export.",
-    htmlFile: "mietrechner.html",
+    Component: MieteRechner,
   },
 ];
