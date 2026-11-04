@@ -8,9 +8,9 @@ import { KREDIT_DEFAULTS } from "../kredit/kredit";
 // Alles sind Platzhalter und im Formular änderbar.
 // ---------------------------------------------------------------------------
 
-export type Gewerk = { n: string; menge: number; einh: string; mat: number; lohn: number };
+export type Gewerk = { n: string; menge: number; einh: string; mat: number; lohn: number; firma?: string; ist?: number };
 export type NkPos = { n: string; betrag: number };
-export type Gesellschafter = { name: string; gew: number; haft: number; ek: number };
+export type Gesellschafter = { name: string; gew: number; haft: number; ek: number; vote?: "" | "ja" | "nein" };
 
 export const GEWERKE: Gewerk[] = [
   { n: "Abbruch / Entsorgung", menge: 1, einh: "pausch.", mat: 500, lohn: 1760 },
@@ -109,9 +109,10 @@ export const D = {
 
 export type V = typeof D;
 
-export type Opts = { kp?: number; vkM2?: number; sanF?: number; extraM?: number; zinsAdd?: number };
+/** vk: absoluter Verkaufspreis (Ist), mehr: sonstige Mehrkosten, ist: Ist-Kosten der Gewerke statt Plan. */
+export type Opts = { kp?: number; vkM2?: number; sanF?: number; extraM?: number; zinsAdd?: number; vk?: number; mehr?: number; ist?: boolean };
 
-export const num = (x: number) => (Number.isFinite(x) ? x : 0);
+export const num = (x: number | undefined) => (typeof x === "number" && Number.isFinite(x) ? x : 0);
 export const eur = (x: number) =>
   `${x < -0.5 ? "−" : ""}${Math.round(Math.abs(x)).toLocaleString("de-AT")} €`;
 export const pct = (x: number, d = 1) =>
@@ -137,8 +138,10 @@ export function rechne(v: V, gewerke: Gewerk[], nk: NkPos[], o: Opts = {}) {
   const sonder = num(v.sonder);
 
   // Sanierung
-  const gewerkeNetto = gewerke.reduce((s, g) => s + num(g.menge) * (num(g.mat) + num(g.lohn)), 0);
-  const gewerkePuffer = gewerkeNetto * p(v.puffer);
+  const plan = (g: Gewerk) => num(g.menge) * (num(g.mat) + num(g.lohn));
+  const useIst = (g: Gewerk) => !!o.ist && num(g.ist) > 0;
+  const gewerkeNetto = gewerke.reduce((s, g) => s + (useIst(g) ? num(g.ist) : plan(g)), 0);
+  const gewerkePuffer = gewerke.reduce((s, g) => s + (useIst(g) ? 0 : plan(g)), 0) * p(v.puffer);
   const sanNkNetto = nk.reduce((s, n) => s + num(n.betrag), 0);
   const gewerkeSumNetto = gewerkeNetto + gewerkePuffer + sanNkNetto;
   let sanNet = v.sanModus === "pausch" ? (num(v.sanM2) * A) / ustF : gewerkeSumNetto;
@@ -182,13 +185,14 @@ export function rechne(v: V, gewerke: Gewerk[], nk: NkPos[], o: Opts = {}) {
   const halte = halteM * M;
 
   // Verkauf
-  const vk = (o.vkM2 !== undefined ? o.vkM2 : num(v.verkM2)) * A;
+  const vk = o.vk !== undefined ? o.vk : (o.vkM2 !== undefined ? o.vkM2 : num(v.verkM2)) * A;
+  const mehr = num(o.mehr ?? 0);
   const erloes = ustOpt ? vk / ustF : vk;
   const provF = p(v.provision) * (v.provisionUst && !ustOpt ? ustF : 1);
   const prov = vk * provF;
   const rl = v.rlOn ? vk * 0.01 : 0;
 
-  const tot = kp + kaufNk + sonder + san + finNk + zinsen + halte + prov + rl;
+  const tot = kp + kaufNk + sonder + san + finNk + zinsen + halte + prov + rl + mehr;
   const gewinn = erloes - tot;
   const marge = tot > 0 ? (gewinn / tot) * 100 : 0;
   const ek = tot - kredit + tilg;
@@ -199,7 +203,7 @@ export function rechne(v: V, gewerke: Gewerk[], nk: NkPos[], o: Opts = {}) {
     A, vers, kp, grest, eintr, notar, makler, kaufSonst, kaufNk, sonder,
     gewerkeNetto, gewerkePuffer, sanNkNetto, gewerkeSumNetto, sanNet, san,
     M, G, kredit, rate, i, zinsen, tilg, rest, zA, tA, kreditVertrag, pfand, nebengeb, finSonst, finNk,
-    halteM, halte, vk, erloes, prov, provF, rl, tot, gewinn, marge, ek, roiPa, netto,
+    halteM, halte, vk, erloes, prov, provF, rl, mehr, tot, gewinn, marge, ek, roiPa, netto,
   };
 }
 
@@ -222,7 +226,7 @@ export function cash(v: V, g: Gewerk[], nk: NkPos[], o: Opts = {}) {
     R[m].zins = r.zA[m] ?? 0;
     R[m].tilg = r.tA[m] ?? 0;
   }
-  R[N].verk = r.erloes - r.prov - r.rl - r.rest;
+  R[N].verk = r.erloes - r.prov - r.rl - r.rest - r.mehr;
   let cum = 0;
   let min = 0;
   let peakM = 0;

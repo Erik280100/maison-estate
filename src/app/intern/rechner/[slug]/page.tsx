@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import Typography from "@mui/material/Typography";
 import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
 import { AppLink } from "@/components/ui/AppLink";
-import { HtmlRechner } from "@/features/rechner/HtmlRechner";
 import { rechner } from "@/features/rechner/registry";
 
 export function generateStaticParams() {
@@ -40,11 +39,7 @@ export default async function RechnerPage({
       <Typography variant="h3" component="h1" sx={{ mt: 2, mb: 4 }}>
         {r.title}
       </Typography>
-      {r.htmlFile ? (
-        <HtmlRechner file={r.htmlFile} title={r.title} />
-      ) : (
-        r.Component && <r.Component />
-      )}
+      <r.Component />
     </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import Chip from "@mui/material/Chip";
@@ -18,16 +18,86 @@ import Typography from "@mui/material/Typography";
 import AddRounded from "@mui/icons-material/AddRounded";
 import CloseRounded from "@mui/icons-material/CloseRounded";
 import { Analyse } from "./ankauf/Analyse";
+import { ObjektKopf, Zusatz } from "./ankauf/Zusatz";
+import { pdfKreditanfrage, pdfObjektakte } from "./ankauf/pdf";
+import { REF0, ZUS0, type Objekt, type Ref, type Zus } from "./ankauf/zusatzRechne";
+import { download } from "./miete/export";
 import {
   ampel, cash, D, eur, GEWERKE, limits, num, pct, rechne, SAN_NK,
   type Gewerk, type NkPos, type V,
 } from "./ankauf/rechne";
 import { Details, Line, NumField, Section, ampelColor } from "./ankauf/ui";
 
+const DRAFT_KEY = "maison-ankauf-draft-v1";
+const REF_KEY = "maison-bewertung-ref";
+const OBJ_KEY = "maison-ankauf-objekte";
+
+function loadDraft(): { v: V; gewerke: Gewerk[]; nk: NkPos[]; z: Zus; id: string | null } {
+  try {
+    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+    if (d?.v) return { v: { ...D, ...d.v }, gewerke: d.gewerke ?? GEWERKE, nk: d.nk ?? SAN_NK, z: { ...ZUS0, ...d.z }, id: d.id ?? null };
+  } catch { /* ignorieren */ }
+  return { v: D, gewerke: GEWERKE, nk: SAN_NK, z: ZUS0, id: null };
+}
+function loadRef(): Ref {
+  try {
+    const d = JSON.parse(localStorage.getItem(REF_KEY) || "null");
+    if (d?.basis) return { ...REF0, ...d };
+  } catch { /* ignorieren */ }
+  return REF0;
+}
+function loadObjs(): Objekt[] {
+  try { return JSON.parse(localStorage.getItem(OBJ_KEY) || "[]"); } catch { return []; }
+}
+
 export function AnkaufVerkaufRechner() {
-  const [v, setV] = useState<V>(D);
-  const [gewerke, setGewerke] = useState<Gewerk[]>(GEWERKE);
-  const [nk, setNk] = useState<NkPos[]>(SAN_NK);
+  const [init] = useState(loadDraft);
+  const [v, setV] = useState<V>(init.v);
+  const [gewerke, setGewerke] = useState<Gewerk[]>(init.gewerke);
+  const [nk, setNk] = useState<NkPos[]>(init.nk);
+  const [z, setZState] = useState<Zus>(init.z);
+  const [REF, setREFState] = useState<Ref>(loadRef);
+  const [objs, setObjs] = useState<Objekt[]>(loadObjs);
+  const [currentId, setCurrentId] = useState<string | null>(init.id);
+  const [msg, setMsg] = useState("");
+  const [armReset, setArmReset] = useState(false);
+  const setZ = (p: Partial<Zus>) => setZState((o) => ({ ...o, ...p }));
+  const setREF = (x: Ref) => {
+    setREFState(x);
+    try { localStorage.setItem(REF_KEY, JSON.stringify(x)); } catch { /* ignorieren */ }
+  };
+  useEffect(() => {
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v, gewerke, nk, z, id: currentId })); } catch { /* ignorieren */ }
+  }, [v, gewerke, nk, z, currentId]);
+  const saveObj = (asNew: boolean) => {
+    const x = rechne(v, gewerke, nk);
+    let list = loadObjs(), id = currentId;
+    const row = {
+      name: z.name || "Ohne Namen", adresse: z.adresse, status: z.status, a: x.A, kp: x.kp, vk: x.vk, marge: x.marge, ziel: num(v.ziel),
+      updatedAt: Date.now(), state: JSON.parse(JSON.stringify({ v, gewerke, nk, z })),
+    };
+    if (asNew || !id || !list.some((o) => o.id === id)) { id = "l" + Date.now().toString(36); list = [{ ...row, id }, ...list]; }
+    else list = list.map((o) => (o.id === id ? { ...row, id: id! } : o));
+    try { localStorage.setItem(OBJ_KEY, JSON.stringify(list)); setObjs(list); setCurrentId(id); setMsg("Gespeichert: " + row.name + " (in diesem Browser)"); }
+    catch { setMsg("Speichern hat nicht geklappt."); }
+  };
+  const loadObj = (o: Objekt) => {
+    setV({ ...D, ...o.state.v }); setGewerke(o.state.gewerke); setNk(o.state.nk); setZState({ ...ZUS0, ...o.state.z });
+    setCurrentId(o.id); setMsg("Geladen: " + o.name); window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const delObj = (id: string) => {
+    const list = loadObjs().filter((o) => o.id !== id);
+    try { localStorage.setItem(OBJ_KEY, JSON.stringify(list)); } catch { /* ignorieren */ }
+    setObjs(list); if (currentId === id) setCurrentId(null); setMsg("Objekt gelöscht.");
+  };
+  const resetAll = () => {
+    if (!armReset) { setArmReset(true); setTimeout(() => setArmReset(false), 4000); return; }
+    setArmReset(false); setV(D); setGewerke(GEWERKE); setNk(SAN_NK); setZState(ZUS0); setCurrentId(null); setMsg("Beispielwerte geladen, neues Objekt.");
+  };
+  const runPdf = async (fn: () => Promise<{ blob: Blob; name: string }>) => {
+    setMsg("PDF wird erstellt …");
+    try { const { blob, name } = await fn(); download(blob, name); setMsg("Heruntergeladen: " + name); } catch { setMsg("PDF hat nicht geklappt."); }
+  };
   const set = <K extends keyof V>(k: K) => (x: V[K]) => setV((o) => ({ ...o, [k]: x }));
   const setGes = (idx: number, patch: Partial<V["ges"][number]>) =>
     setV((o) => ({ ...o, ges: o.ges.map((s, i) => (i === idx ? { ...s, ...patch } : s)) }));
@@ -77,6 +147,11 @@ export function AnkaufVerkaufRechner() {
 
   return (
     <Stack spacing={3}>
+      <ObjektKopf
+        z={z} setZ={setZ} msg={msg} armReset={armReset}
+        onSave={() => saveObj(false)} onSaveNew={() => saveObj(true)} onReset={resetAll}
+        onPdf={() => runPdf(() => pdfObjektakte(v, gewerke, nk, z))} onBank={() => runPdf(() => pdfKreditanfrage(v, gewerke, nk, z))}
+      />
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, lg: 7 }}>
           <Stack spacing={3}>
@@ -216,25 +291,31 @@ export function AnkaufVerkaufRechner() {
                   )}
                   {gewerke.map((g, idx) => (
                     <Grid container spacing={1} key={idx} sx={{ alignItems: "center" }}>
-                      <Grid size={{ xs: 12, sm: 3 }}>
+                      <Grid size={{ xs: 12, sm: 2 }}>
                         <TextField fullWidth size="small" label="Gewerk" value={g.n} onChange={(e) => patchG(idx, { n: e.target.value })} />
                       </Grid>
-                      <Grid size={{ xs: 4, sm: 1.5 }}>
+                      <Grid size={{ xs: 12, sm: 1.4 }}>
+                        <TextField fullWidth size="small" label="Firma" value={g.firma ?? ""} onChange={(e) => patchG(idx, { firma: e.target.value })} />
+                      </Grid>
+                      <Grid size={{ xs: 4, sm: 1.1 }}>
                         <TextField fullWidth size="small" type="number" label="Menge" value={Number.isFinite(g.menge) ? g.menge : ""} onChange={(e) => patchG(idx, { menge: e.target.value === "" ? NaN : Number(e.target.value) })} />
                       </Grid>
-                      <Grid size={{ xs: 4, sm: 1.5 }}>
+                      <Grid size={{ xs: 4, sm: 1.1 }}>
                         <TextField fullWidth size="small" label="Einh." value={g.einh} onChange={(e) => patchG(idx, { einh: e.target.value })} />
                       </Grid>
-                      <Grid size={{ xs: 4, sm: 1.8 }}>
+                      <Grid size={{ xs: 4, sm: 1.3 }}>
                         <TextField fullWidth size="small" type="number" label="Mat. €/E" value={Number.isFinite(g.mat) ? g.mat : ""} onChange={(e) => patchG(idx, { mat: e.target.value === "" ? NaN : Number(e.target.value) })} />
                       </Grid>
-                      <Grid size={{ xs: 4, sm: 1.8 }}>
+                      <Grid size={{ xs: 4, sm: 1.3 }}>
                         <TextField fullWidth size="small" type="number" label="Lohn €/E" value={Number.isFinite(g.lohn) ? g.lohn : ""} onChange={(e) => patchG(idx, { lohn: e.target.value === "" ? NaN : Number(e.target.value) })} />
                       </Grid>
-                      <Grid size={{ xs: 6, sm: 1.4 }}>
+                      <Grid size={{ xs: 4, sm: 1.2 }}>
                         <Typography variant="caption" sx={{ fontWeight: 600 }}>
                           {eur(num(g.menge) * (num(g.mat) + num(g.lohn)))}
                         </Typography>
+                      </Grid>
+                      <Grid size={{ xs: 4, sm: 1.4 }}>
+                        <TextField fullWidth size="small" type="number" label="Ist €" value={g.ist ? g.ist : ""} onChange={(e) => patchG(idx, { ist: e.target.value === "" ? 0 : Number(e.target.value) })} />
                       </Grid>
                       <Grid size={{ xs: 2, sm: 1 }}>
                         <IconButton size="small" aria-label="Gewerk entfernen" onClick={() => setGewerke((l) => l.filter((_, i) => i !== idx))}>
@@ -472,6 +553,10 @@ export function AnkaufVerkaufRechner() {
       </Grid>
 
       <Analyse v={v} set={set} setGes={setGes} g={gewerke} nk={nk} />
+      <Zusatz
+        v={v} set={set} setGes={setGes} gewerke={gewerke} nk={nk} z={z} setZ={setZ} REF={REF} setREF={setREF}
+        objs={objs} currentId={currentId} onLoad={loadObj} onDelete={delObj}
+      />
     </Stack>
   );
 }
