@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import { AnkaufVerkaufRechner } from "./AnkaufVerkaufRechner";
 import { KreditRechner } from "./KreditRechner";
 import { MieteRechner } from "./MieteRechner";
+import { UmschuldungsRechner } from "./UmschuldungsRechner";
 
 export type Rechner = {
   slug: string;
@@ -35,7 +36,7 @@ export const rechner: Rechner[] = [
     slug: "umschuldung",
     title: "Umschuldungsrechner",
     description: "Vergleich einer bestehenden Finanzierung mit einer Umschuldung.",
-    htmlFile: "umschuldung.html",
+    Component: UmschuldungsRechner,
   },
   {
     slug: "fix-und-flip",
