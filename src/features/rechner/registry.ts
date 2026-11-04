@@ -27,7 +27,7 @@ export const rechner: Rechner[] = [
     slug: "ankauf-verkauf",
     title: "Ankauf, Sanierung & Verkauf",
     description:
-      "Gewinn, Marge und Rendite p. a. für ein Objekt von Ankauf bis Verkauf (Beispielrechner).",
+      "Ankauf mit Nebenkosten, Sanierung nach Gewerken, Zinsen und Tilgung über die Haltedauer, Verkauf mit Provision – Gewinn, Marge und Rendite p. a.",
     Component: AnkaufVerkaufRechner,
   },
   {
