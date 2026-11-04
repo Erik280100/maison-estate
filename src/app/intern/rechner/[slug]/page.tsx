@@ -31,11 +31,11 @@ export default async function RechnerPage({
   return (
     <>
       <AppLink
-        href="/intern/"
+        href="/intern/rechner/"
         variant="body2"
         sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, color: "secondary.dark" }}
       >
-        <ArrowBackRounded fontSize="small" /> Übersicht
+        <ArrowBackRounded fontSize="small" /> Rechner
       </AppLink>
       <Typography variant="h3" component="h1" sx={{ mt: 2, mb: 4 }}>
         {r.title}
