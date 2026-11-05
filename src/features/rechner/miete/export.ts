@@ -24,7 +24,7 @@ const FIELDS: [string, keyof S, string, number?][] = [
   ["Verspätet bezahlte Miete", "rueck", "%"], ["Ø Verzugsdauer", "verzD", "Mon."], ["Verzugszinsen", "verzZ", "%"],
   ["Eigenmittel-Eingabe", "ekMode", ""], ["Fremdfinanzierung", "fk", "%"], ["Eigenmittel", "ekEur", "€"],
   ["Sollzins", "zins", "%"], ["Fixzinsphase", "zinsFix", "J."], ["Zins danach", "zins2", "%"], ["Laufzeit", "lz", "J."], ["Tilgungsfreie Zeit", "tf", "J."],
-  ["Sondertilgung p.a.", "sond", "€"], ["Bearbeitungsgebühr", "bearb", "%"], ["Eintragung Pfandrecht", "pfand", "%"], ["Mindest-DSCR", "dscrZiel", "×"],
+  ["Sondertilgung p.a.", "sond", "€"], ["Bearbeitungsgebühr", "bearb", "%"], ["Eintragung Pfandrecht", "pfand", "%"], ["Mindest-Ratendeckung", "dscrZiel", "×"],
   ["Steuerart", "stMode", "", 1], ["Gebäudeanteil", "geb", "%", 1], ["AfA", "afa", "%", 1], ["Beschleunigte AfA", "beschl", "", 1],
   ["KöSt", "koest", "%", 1], ["Verluste verrechnen", "verlust", "", 1], ["Grenzsteuersatz", "grenz", "%", 1], ["Immobilienertragsteuer", "immoest", "%", 1],
   ["Betriebskostenaufstellung liegt vor", "docBk", "", 1], ["Nutzwertgutachten liegt vor", "docNwg", "", 1], ["Energieausweis liegt vor", "docEa", "", 1], ["Hausverwaltung liegt vor", "docHv", "", 1],
@@ -87,11 +87,11 @@ export async function pdfAkte(s: S) {
   head("Ergebnis");
   ([
     ["Nettomietrendite", PP(r.net)], ["Bruttomietrendite auf Kaufpreis", PP(r.brutto)], ["Kaufpreisfaktor", PN(r.faktor) + "-fach"],
-    ["DSCR", isFinite(r.dscr) ? PN(r.dscr) : "kein Kredit"], ["Jahresmiete ÷ Kredit", PP(r.mieteKredit)],
+    ["Ratendeckung", isFinite(r.dscr) ? PN(r.dscr) : "kein Kredit"], ["Jahresmiete ÷ Kredit", PP(r.mieteKredit)],
     ["Cashflow nach Steuer Jahr 1", PE(r.cf1) + "  (" + PE(r.cfM) + "/Monat)"], ["Eigenkapitalrendite Jahr 1", PP(r.coc, 1)],
     ["EK-IRR inkl. Verkauf nach " + r.H + " J.", PP(r.irr, 1)],
     ["Max. Kaufpreis für Zielrendite", isFinite(L.kmax) ? Math.floor(L.kmax).toLocaleString("de-AT") + " EUR/m²" : "-"],
-    ["Mindestmiete: Rate gedeckt / DSCR " + PN(n(s.dscrZiel)), PN(L.hNull) + " / " + PN(L.hDscr) + " EUR/m²"],
+    ["Mindestmiete: Rate gedeckt / Ratendeckung " + PN(n(s.dscrZiel)), PN(L.hNull) + " / " + PN(L.hDscr) + " EUR/m²"],
   ] as [string, string][]).forEach(([a, b]) => line(a, b));
   head("Investition & Finanzierung");
   ([
@@ -106,7 +106,7 @@ export async function pdfAkte(s: S) {
     ["Übrige nicht umlegbare Kosten", PE(-(r.kostenJ - r.wechselJ))], ["Mietertrag nach Kosten", PE(r.noi)],
   ] as [string, string][]).forEach(([a, b], i, arr) => line(a, b, i === arr.length - 1));
   head("Stresstest");
-  table(["Szenario", "Nettorendite", "DSCR", "Cashflow/M", "EK-IRR"],
+  table(["Szenario", "Nettorendite", "Ratendeckung", "Cashflow/M", "EK-IRR"],
     stress(s).map(({ n: nm, r: x }) => [nm, PP(x.net), isFinite(x.dscr) ? PN(x.dscr) : "-", PE(x.cfM), PP(x.irr, 1)]), [18, 120, 142, 168, 192]);
   head("Hochrechnung");
   table(["Jahr", "Miete eff.", "Ertrag", "Zinsen", "Tilgung", "AfA", r.priv ? "ESt" : "KöSt", "Cashflow", "Restschuld"],
@@ -172,7 +172,7 @@ export async function excel(s: S, kunde: boolean) {
   const res: unknown[][] = [
     ["Maison Estate GmbH – Mietrechner" + (k ? " (Käufersicht, vor Steuern)" : "")], [s.name || "Objekt", s.adresse || ""], ["Stand", new Date().toLocaleDateString("de-AT")], [],
     ["Kennzahl", "Wert", "Einheit"], ["Nettomietrendite", rd(r.net * 100), "%"], ["Bruttomietrendite auf Kaufpreis", rd(r.brutto * 100), "%"],
-    ["Kaufpreisfaktor", rd(r.faktor), "×"], ["DSCR", isFinite(r.dscr) ? rd(r.dscr) : "kein Kredit", "×"], ["Jahresmiete ÷ Kredit", rd(r.mieteKredit * 100), "%"],
+    ["Kaufpreisfaktor", rd(r.faktor), "×"], ["Ratendeckung", isFinite(r.dscr) ? rd(r.dscr) : "kein Kredit", "×"], ["Jahresmiete ÷ Kredit", rd(r.mieteKredit * 100), "%"],
     [k ? "Überschuss vor Steuern Jahr 1" : "Cashflow nach Steuer Jahr 1", rd(k ? r.cfPre1 : r.cf1, 0), "€"],
     ["pro Monat", rd((k ? r.cfPre1 : r.cf1) / 12, 0), "€"], ["EK-Rendite Jahr 1", rd(r.coc * 100), "%"], ["EK-IRR inkl. Verkauf", rd(r.irr * 100), "%"], [],
     ["Kaufpreis (netto)", rd(r.kp, 0), "€"], ["Kaufnebenkosten", rd(r.nk, 0), "€"], ["Sonstige Kosten", rd(r.sonst, 0), "€"],
@@ -182,7 +182,7 @@ export async function excel(s: S, kunde: boolean) {
     ["Hauptmietzins", rd(r.hmz), "€/m²"], ["Sollmiete p.a.", rd(r.mieteJ, 0), "€"], ["Verzugszinsen netto p.a.", rd(r.verzJ, 0), "€"],
     ["Mieterwechsel p.a.", rd(r.wechselJ, 0), "€"], ["Nicht umlegbare Kosten gesamt p.a.", rd(r.kostenJ, 0), "€"], ["Mietertrag nach Kosten p.a.", rd(r.noi, 0), "€"], [],
     ...(k ? [] : [["Max. Kaufpreis für Zielrendite", isFinite(L.kmax) ? Math.floor(L.kmax) : null, "€/m²"]]),
-    ["Mindestmiete: Rate gedeckt", rd(L.hNull), "€/m²"], ["Mindestmiete für DSCR", rd(L.hDscr), "€/m²"], [],
+    ["Mindestmiete: Rate gedeckt", rd(L.hNull), "€/m²"], ["Mindestmiete für Ratendeckung", rd(L.hDscr), "€/m²"], [],
     ["Wert nach " + r.H + " J.", rd(r.sale, 0), "€"], ["Verkauf netto nach Kredit" + (k ? "" : " und Steuer"), rd(r.exNet, 0), "€"], [],
     ["Beispielrechnung auf Basis von Annahmen, keine Zusicherung von Ertrag oder Wertentwicklung."],
   ];
@@ -197,7 +197,7 @@ export async function excel(s: S, kunde: boolean) {
       : [y.t, 2026 + y.t, rd(y.mieteM, 0), rd(y.eff, 0), rd(y.kost, 0), rd(y.ertrag, 0), rd(y.zinsJ, 0), rd(y.tilgJ, 0), rd(y.paid, 0), rd(y.vorAfa, 0), rd(y.afaJ, 0), rd(y.evs, 0), rd(y.st, 0), rd(y.netto, 0), rd(y.cf, 0), rd(y.bal, 0), rd(y.wertT, 0)]);
   XL.utils.book_append_sheet(wb, sheet([hdr, ...body, [], ["Summe laufender Cashflow ohne Verkauf", null, rd(r.sumCf, 0)], ["Verkauf netto", null, rd(r.exNet, 0)]], hdr.map(() => 13)), "Hochrechnung");
   XL.utils.book_append_sheet(wb, sheet([
-    ["Szenario", "Nettorendite %", "DSCR", k ? "Überschuss/M €" : "Cashflow/M €", "EK-IRR %"],
+    ["Szenario", "Nettorendite %", "Ratendeckung", k ? "Überschuss/M €" : "Cashflow/M €", "EK-IRR %"],
     ...stress(SE).map(({ n: nm, r: x }) => [nm, rd(x.net * 100), isFinite(x.dscr) ? rd(x.dscr) : null, rd(k ? x.cfPre1 / 12 : x.cfM, 0), rd(x.irr * 100)]),
   ], [44, 15, 10, 16, 12]), "Stresstest");
   const out = XL.write(wb, { bookType: "xlsx", type: "array" });

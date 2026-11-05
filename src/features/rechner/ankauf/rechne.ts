@@ -74,7 +74,7 @@ export const D = {
   hSo: 0,
   // Finanzierung
   fremd: 120000,
-  zins: 4.5,
+  zins: 3.5,
   laufzeit: 25,
   tilgFrei: 0,
   kreditVertragPct: KREDIT_DEFAULTS.kreditvertragserstellungPct,

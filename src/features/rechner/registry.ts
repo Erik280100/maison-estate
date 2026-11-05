@@ -39,7 +39,7 @@ export const rechner: Rechner[] = [
   {
     slug: "mietrechner",
     title: "Mietrechner",
-    description: "Mietrendite, Cashflow und DSCR für Bestandsobjekte inkl. PDF/Excel-Export.",
+    description: "Mietrendite, Cashflow und Ratendeckung für Bestandsobjekte inkl. PDF/Excel-Export.",
     Component: MieteRechner,
   },
 ];

@@ -402,7 +402,7 @@ export function Analyse({
           <Line label="Laufzeit · tilgungsfrei" value={`${r.M} Mon. · ${r.G} Mon.`} strong />
           <Line label="Zinsen bis Verkauf" value={eur(r.zinsen)} />
           <Line label="Exit 1: Verkauf" value={`${eur(r.erloes)} · Marge ${pct(r.marge)}`} strong />
-          <Line label="Exit 2: Halten" value={`${pct(H.nettoR, 2)} netto · DSCR ${Number.isFinite(dscr) ? dscr.toLocaleString("de-AT", { maximumFractionDigits: 2 }) : "–"}`} />
+          <Line label="Exit 2: Halten" value={`${pct(H.nettoR, 2)} netto · Ratendeckung ${Number.isFinite(dscr) ? dscr.toLocaleString("de-AT", { maximumFractionDigits: 2 }) : "–"}`} />
           <Line label="Stresstest (alles zusammen)" value={`${pct(worst.x.marge)} Marge`} />
         </Stack>
       </Section>

@@ -28,7 +28,7 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
 import { brand } from "@/theme/theme";
-import { Line, NumField, Section, ampelColor } from "./ankauf/ui";
+import { Details, Line, NumField, Section, ampelColor } from "./ankauf/ui";
 import { download, excel, pdfAkte, pdfExpose } from "./miete/export";
 import {
   DEFAULTS, EXCEL_TPL, MARKT, MRG_INFO, STATI, calc, eur, exposeText, growth, kundeS, limits, n0, n2, pct, stress,
@@ -127,7 +127,7 @@ export function MieteRechner() {
 
   const okN = r.net >= ziel - 1e-9, okD = r.dscr >= dz;
   const cls = r.dscr < 1 ? "bad" : (k ? okD : okN && okD) ? "good" : "warn";
-  const chip = r.dscr < 1 ? "Rate nicht gedeckt" : cls === "good" ? (k ? "Rate gedeckt" : "Ziel & Bank ok") : !k && !okN ? "unter " + pct(ziel, 1) : "DSCR unter " + n2(dz);
+  const chip = r.dscr < 1 ? "Rate nicht gedeckt" : cls === "good" ? (k ? "Rate gedeckt" : "Ziel & Bank ok") : !k && !okN ? "unter " + pct(ziel, 1) : "Ratendeckung unter " + n2(dz);
   const cfShow = k ? r.cfPre1 / 12 : r.cfM;
   const brM2 = (r.hmz + num(s.bk)) * 1.1, diff = brM2 / MARKT - 1;
   const ekq = r.inv > 0 ? r.ek / r.inv : 0;
@@ -135,7 +135,7 @@ export function MieteRechner() {
 
   const checks: ["error" | "warning" | "success", string][] = [];
   if (r.dscr < 1) checks.push(["error", `Die Miete deckt die Kreditrate nicht: monatlich fehlen ${eur((r.annJ - r.noi) / 12)}. Mehr Eigenkapital, längere Laufzeit oder tilgungsfreie Zeit prüfen.`]);
-  else if (r.dscr < dz) checks.push(["warning", `DSCR ${n2(r.dscr)} unter dem Bankziel ${n2(dz)}. Die Bank wird mehr Eigenmittel oder Sicherheiten verlangen.`]);
+  else if (r.dscr < dz) checks.push(["warning", `Ratendeckung ${n2(r.dscr)} × unter dem Bankziel ${n2(dz)}. Die Bank wird mehr Eigenmittel oder Sicherheiten verlangen.`]);
   if (ekq < 0.2 && r.kredit > 0) checks.push(["warning", `Eigenmittelanteil ${pct(ekq, 0)}: Banken erwarten bei Wohnimmobilien meist 20–30 %.`]);
   if (diff > 0.1) checks.push(["warning", `Die Bruttomiete liegt ${pct(diff, 0)} über dem Grazer Angebotsmedian – Leerstand höher ansetzen oder Miete belegen.`]);
   if (num(s.leer) < 2) checks.push(["warning", "Leerstand unter 2 % ist optimistisch; Mieterwechsel und Sanierungsphasen einrechnen."]);
@@ -239,16 +239,24 @@ export function MieteRechner() {
               <Checks s={s} set={setB} kunde={k} list={[{ k: "kpBrutto", label: "Einkaufspreis ist Brutto inkl. USt", helper: "wie im Immo-Excel: Nebenkosten und AfA auf Bruttobasis, Vorsteuer wird abgezogen", intern: true }]} />
               <Fields s={s} set={setN} kunde={k} list={[
                 { k: "nettoAnt", label: "Netto-Anteil vom Bruttopreis", unit: "%", helper: "Excel: 82 %", intern: true, when: (x) => x.kpBrutto },
-                { k: "grest", label: "Grunderwerbsteuer", unit: "%" },
-                { k: "eintr", label: "Eintragung Eigentum", unit: "%" },
-                { k: "notar", label: "Notar / Treuhand", unit: "%" },
-                { k: "notarFix", label: "Notar pauschal", unit: "€", helper: "zusätzlich, Excel: 800 €" },
               ]} />
-              <Checks s={s} set={setB} kunde={k} list={[{ k: "maklerOn", label: "Maklerprovision beim Kauf", helper: "3 % zzgl. USt üblich" }]} />
+              <Details title="Ankaufsnebenkosten" sum={eur(r.nk + r.sonst)}>
+                <Stack spacing={2}>
+                  <Fields s={s} set={setN} kunde={k} list={[
+                    { k: "grest", label: "Grunderwerbsteuer", unit: "%" },
+                    { k: "eintr", label: "Eintragung Eigentum", unit: "%" },
+                    { k: "notar", label: "Notar / Treuhand", unit: "%" },
+                    { k: "notarFix", label: "Notar pauschal", unit: "€", helper: "zusätzlich, Excel: 800 €" },
+                  ]} />
+                  <Checks s={s} set={setB} kunde={k} list={[{ k: "maklerOn", label: "Maklerprovision beim Kauf", helper: "3 % zzgl. USt üblich" }]} />
+                  <Fields s={s} set={setN} kunde={k} list={[
+                    { k: "makler", label: "Maklerprovision", unit: "%", when: (x) => x.maklerOn },
+                    { k: "sonst", label: "Sonstige Kosten", unit: "€" },
+                  ]} />
+                </Stack>
+              </Details>
               <Fields s={s} set={setN} kunde={k} list={[
-                { k: "makler", label: "Maklerprovision", unit: "%", when: (x) => x.maklerOn },
-                { k: "sonst", label: "Sonstige Kosten", unit: "€" },
-                { k: "sanM2", label: "Sanierung vor Vermietung", unit: "€/m²", helper: "netto, aus dem Margin Rechner", intern: true },
+                { k: "sanM2",label: "Sanierung vor Vermietung", unit: "€/m²", helper: "netto, aus dem Margin Rechner", intern: true },
                 { k: "einr", label: "Küche / Einrichtung", unit: "€", intern: true },
               ]} />
               <Line label="Kaufpreis (netto) · Nebenkosten" value={`${eur(r.kp)} · ${eur(r.nk)} (${pct(r.nkR)})`} />
@@ -311,7 +319,7 @@ export function MieteRechner() {
                 { k: "sond", label: "Sondertilgung pro Jahr", unit: "€" },
                 { k: "bearb", label: "Bearbeitungsgebühr Bank", unit: "%" },
                 { k: "pfand", label: "Eintragung Pfandrecht", unit: "%" },
-                { k: "dscrZiel", label: "Mindest-DSCR der Bank", unit: "×", helper: "Mietertrag ÷ Kreditrate" },
+                { k: "dscrZiel", label: "Mindest-Ratendeckung der Bank", unit: "×", helper: "Mietertrag ÷ Kreditrate (DSCR)" },
               ]} />
               <Line label="Kredit · Rate" value={`${eur(r.kredit)} · ${eur(r.annM)}/M${r.tf ? " ab Jahr " + (r.tf + 1) : ""}`} />
               <Line label="Kreditnebenkosten · Kredit in % vom Kaufpreis" value={`${eur(r.finK)} · ${pct(r.kp > 0 ? r.kredit / r.kp : 0, 0)}`} />
@@ -384,7 +392,8 @@ export function MieteRechner() {
               <Grid container spacing={1}>
                 {([
                   [k ? "Überschuss / Monat" : "Cashflow / Monat", eur(cfShow), cfShow < 0 ? ampelColor.bad : ampelColor.good],
-                  ["DSCR", isFinite(r.dscr) ? n2(r.dscr) + " ×" : "kein Kredit", r.dscr >= dz ? ampelColor.good : r.dscr >= 1 ? ampelColor.warn : ampelColor.bad],
+                  ["Ratendeckung", isFinite(r.dscr) ? n2(r.dscr) + " ×" : "kein Kredit", r.dscr >= dz ? ampelColor.good : r.dscr >= 1 ? ampelColor.warn : ampelColor.bad],
+                  ["Eigenmittelquote", pct(ekq, 0), ekq >= 0.2 ? ampelColor.good : ampelColor.warn],
                   ["EK-Rendite J1", pct(r.coc), "text.primary"],
                   ["EK-IRR inkl. Exit", pct(r.irr), "text.primary"],
                 ] as [string, string, string][]).map(([l, v, c]) => (
@@ -410,7 +419,7 @@ export function MieteRechner() {
               </Stack>
               <Alert severity="info" icon={false} sx={{ fontSize: 13 }}>
                 {!k && <>Für {pct(ziel, 1)} Nettorendite höchstens <b>{isFinite(L.kmax) && L.kmax > 0 ? n0(L.kmax) + " €/m²" : "–"}</b> zahlen. </>}
-                Damit die Miete die Kreditrate deckt, braucht es mindestens <b>{n2(L.hNull)} €/m²</b> Hauptmietzins; für einen DSCR von {n2(dz)} sind es <b>{n2(L.hDscr)} €/m²</b>.
+                Damit die Miete die Kreditrate deckt, braucht es mindestens <b>{n2(L.hNull)} €/m²</b> Hauptmietzins; für eine Ratendeckung von {n2(dz)} sind es <b>{n2(L.hDscr)} €/m²</b>.
                 {s.mrg === "voll" && r.hmz < L.hNull ? " In der Vollanwendung ist der Richtwertmietzins die Obergrenze – das Objekt trägt sich dann nur mit mehr Eigenkapital." : ""}
               </Alert>
               <Stack spacing={0.75}>
@@ -439,7 +448,7 @@ export function MieteRechner() {
         <TableContainer>
           <Table size="small">
             <TableHead><TableRow>
-              <TableCell sx={th}>Szenario</TableCell><TableCell sx={th} align="right">Nettorendite</TableCell><TableCell sx={th} align="right">DSCR</TableCell>
+              <TableCell sx={th}>Szenario</TableCell><TableCell sx={th} align="right">Nettorendite</TableCell><TableCell sx={th} align="right">Ratendeckung</TableCell>
               <TableCell sx={th} align="right">{k ? "Überschuss/M" : "Cashflow/M"}</TableCell><TableCell sx={th} align="right">EK-IRR</TableCell>
             </TableRow></TableHead>
             <TableBody>
@@ -582,7 +591,7 @@ export function MieteRechner() {
 function FooterNote(): ReactNode {
   return (
     <Typography variant="caption" color="text.secondary">
-      Nettomietrendite = Mietertrag nach Leerstand, Verzug, Mieterwechsel und nicht umlegbaren Kosten ÷ Gesamtinvestition. DSCR = Mietertrag ÷ Kreditrate (nach der tilgungsfreien Zeit).
+      Nettomietrendite = Mietertrag nach Leerstand, Verzug, Mieterwechsel und nicht umlegbaren Kosten ÷ Gesamtinvestition. Ratendeckung (DSCR) = Mietertrag ÷ Kreditrate (nach der tilgungsfreien Zeit).
       Richtwert Steiermark 9,30 €/m² ab 1.4.2026; Wertsicherung nach Mieten-Wertsicherungsgesetz vereinfacht als ganzjährige Anpassung (in Voll- und Teilanwendung zählt Inflation über 3 % nur zur Hälfte, 2027 in der Vollanwendung höchstens 2 %).
       Befristungen im MRG-Bereich durch Unternehmer mindestens 5 Jahre. Maklerprovision bei Neuvermietung in Bruttomonatsmieten (Hauptmietzins + Betriebskosten). Angebotsmiete Graz 15,15 €/m² brutto (ImmoScout24, Mai 2026).
       Beispielrechnung mit Annahmen, keine Zusicherung von Ertrag oder Wertentwicklung und keine Rechts-, Steuer- oder Finanzierungsberatung.

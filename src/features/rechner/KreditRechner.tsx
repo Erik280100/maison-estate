@@ -155,7 +155,7 @@ export function KreditRechner() {
   const [kaufpreis, setKaufpreis] = useState("400000");
   const [eigenmittel, setEigenmittel] = useState("80000");
   const [laufzeit, setLaufzeit] = useState("35");
-  const [zinssatz, setZinssatz] = useState("2.85");
+  const [zinssatz, setZinssatz] = useState("3.5");
   const [mitMakler, setMitMakler] = useState(true);
   const [nkMitfinanziert, setNkMitfinanziert] = useState(true);
   const [saetzeOffen, setSaetzeOffen] = useState(false);
