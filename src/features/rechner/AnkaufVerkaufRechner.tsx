@@ -142,7 +142,7 @@ export function AnkaufVerkaufRechner() {
     [`Zinsen (${r.M} Monate)`, r.zinsen],
     ["Betriebskosten, Strom & Co.", r.halte],
     ["Verkaufsprovision", r.prov],
-    ...(r.rl ? ([["Gewährleistungsrücklage", r.rl]] as [string, number][]) : []),
+    ...(r.rl ? ([["Gewährleistungsvorsorge", r.rl]] as [string, number][]) : []),
   ];
 
   return (
@@ -206,7 +206,7 @@ export function AnkaufVerkaufRechner() {
                       <NumField label="Eintragung Eigentum (Grundbuch)" suffix="%" value={v.eintr} onChange={set("eintr")} helper={eur(r.eintr)} />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
-                      <NumField label="Vertragserrichtung / Treuhand" suffix="%" value={v.notar} onChange={set("notar")} helper={eur(r.notar)} />
+                      <NumField label="Vertragserrichtung / Treuhand (zzgl. USt)" suffix="%" value={v.notar} onChange={set("notar")} helper={eur(r.notar)} />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
                       <NumField
@@ -256,7 +256,7 @@ export function AnkaufVerkaufRechner() {
                   <NumField label="Körperschaftsteuer" suffix="%" value={v.koest} onChange={set("koest")} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
-                  <NumField label="Mindest-Nettomarge" suffix="%" value={v.ziel} onChange={set("ziel")} />
+                  <NumField label="Mindestmarge vor Steuer (auf Kosten)" suffix="%" value={v.ziel} onChange={set("ziel")} />
                 </Grid>
               </Grid>
               <FormControlLabel
@@ -489,7 +489,7 @@ export function AnkaufVerkaufRechner() {
               </Grid>
               <FormControlLabel
                 control={<Switch checked={v.rlOn} onChange={(e) => set("rlOn")(e.target.checked)} />}
-                label="Gewährleistungsrücklage 1 % vom Verkaufspreis"
+                label="Gewährleistungsvorsorge 1 % vom Verkaufspreis (als Kosten angesetzt)"
               />
             </Section>
           </Stack>
@@ -540,7 +540,7 @@ export function AnkaufVerkaufRechner() {
                 <Line label="Gesamtkosten" value={eur(r.tot)} strong />
                 <Line label="Erlös" value={eur(r.erloes)} />
                 <Typography variant="caption" sx={{ fontWeight: 800, color: ampelColor[cls] }}>
-                  Gewinn vor Steuern: {eur(r.gewinn)} · Nettomarge {pct(r.marge)}
+                  Gewinn vor Steuern: {eur(r.gewinn)} · Marge vor Steuer {pct(r.marge)}
                 </Typography>
                 <Divider />
                 <Line label="Kredit" value={eur(r.kredit)} hint={`Rate ${eur(r.rate)} / Monat`} />

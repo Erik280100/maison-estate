@@ -21,11 +21,11 @@ const FIELDS: [string, keyof S, string, number?][] = [
   ["Hauptmietzins frei", "miete", "€/m²"], ["Stellplatz, Keller", "extra", "€/M"], ["Betriebskosten", "bk", "€/m²"],
   ["Leerstand / Mietausfall", "leer", "%"], ["Mietverwaltung", "verw", "€/M"], ["Rücklage", "rl", "€/m²·M"], ["Instandhaltung", "inst", "€/m²·J"],
   ["Inflation p.a.", "infl", "%"], ["Mieterwechsel alle", "wJ", "J."], ["Makler Neuvermietung", "wMM", "BMM"], ["Kosten je Wechsel", "wRen", "€"],
-  ["Verspätet bezahlte Miete", "rueck", "%"], ["Ø Verzugsdauer", "verzD", "Mon."], ["Verzugszinsen", "verzZ", "%"],
+  ["Verspätet bezahlte Miete", "rueck", "%"], ["Ø Verzugsdauer", "verzD", "Mon."], ["Verzugszinsen", "verzZ", "%"], ["Uneinbringliche Mieten", "ausfall", "%"],
   ["Eigenmittel-Eingabe", "ekMode", ""], ["Fremdfinanzierung", "fk", "%"], ["Eigenmittel", "ekEur", "€"],
   ["Sollzins", "zins", "%"], ["Fixzinsphase", "zinsFix", "J."], ["Zins danach", "zins2", "%"], ["Laufzeit", "lz", "J."], ["Tilgungsfreie Zeit", "tf", "J."],
   ["Sondertilgung p.a.", "sond", "€"], ["Bearbeitungsgebühr", "bearb", "%"], ["Eintragung Pfandrecht", "pfand", "%"], ["Mindest-Ratendeckung", "dscrZiel", "×"],
-  ["Steuerart", "stMode", "", 1], ["Gebäudeanteil", "geb", "%", 1], ["AfA", "afa", "%", 1], ["Beschleunigte AfA", "beschl", "", 1],
+  ["Steuerart", "stMode", "", 1], ["Gebäudeanteil", "geb", "%", 1], ["AfA", "afa", "%", 1], ["Beschleunigte AfA", "beschl", "", 1], ["Sanierung abschreiben über", "sanJ", "Jahre", 1],
   ["KöSt", "koest", "%", 1], ["Verluste verrechnen", "verlust", "", 1], ["Grenzsteuersatz", "grenz", "%", 1], ["Immobilienertragsteuer", "immoest", "%", 1],
   ["Betriebskostenaufstellung liegt vor", "docBk", "", 1], ["Nutzwertgutachten liegt vor", "docNwg", "", 1], ["Energieausweis liegt vor", "docEa", "", 1], ["Hausverwaltung liegt vor", "docHv", "", 1],
   ["Haltedauer", "H", "J."], ["Wertsteigerung p.a.", "wert", "%"], ["Verkaufskosten", "vkk", "%"], ["Ziel-Nettomietrendite", "ziel", "%", 1],
@@ -102,7 +102,7 @@ export async function pdfAkte(s: S) {
   head("Miete & Bewirtschaftung pro Jahr");
   ([
     ["Hauptmietzins", PN(r.hmz) + " EUR/m²"], ["Sollmiete inkl. Nebenflächen", PE(r.mieteJ)], ["Leerstand " + s.leer + " %", PE(-r.mieteJ * s.leer / 100)],
-    ["Verzugszinsen netto", PE(r.verzJ)], ["Mieterwechsel (Makler, Ausmalen)", PE(-r.wechselJ)],
+    ["Zinseffekt Verzug (netto)", PE(r.verzJ)], ["Mieterwechsel (Makler, Ausmalen)", PE(-r.wechselJ)],
     ["Übrige nicht umlegbare Kosten", PE(-(r.kostenJ - r.wechselJ))], ["Mietertrag nach Kosten", PE(r.noi)],
   ] as [string, string][]).forEach(([a, b], i, arr) => line(a, b, i === arr.length - 1));
   head("Stresstest");
@@ -179,7 +179,7 @@ export async function excel(s: S, kunde: boolean) {
     ...(k ? [] : [["Sanierung & Einrichtung", rd(r.san, 0), "€"]]),
     ["Pfandrecht & Bearbeitung", rd(r.finK, 0), "€"], ["Gesamtinvestition", rd(r.inv, 0), "€"], ["Eigenkapital", rd(r.ek, 0), "€"],
     ["Kredit", rd(r.kredit, 0), "€"], ["Rate pro Monat", rd(r.annM, 0), "€"], [],
-    ["Hauptmietzins", rd(r.hmz), "€/m²"], ["Sollmiete p.a.", rd(r.mieteJ, 0), "€"], ["Verzugszinsen netto p.a.", rd(r.verzJ, 0), "€"],
+    ["Hauptmietzins", rd(r.hmz), "€/m²"], ["Sollmiete p.a.", rd(r.mieteJ, 0), "€"], ["Zinseffekt Verzug p.a.", rd(r.verzJ, 0), "€"],
     ["Mieterwechsel p.a.", rd(r.wechselJ, 0), "€"], ["Nicht umlegbare Kosten gesamt p.a.", rd(r.kostenJ, 0), "€"], ["Mietertrag nach Kosten p.a.", rd(r.noi, 0), "€"], [],
     ...(k ? [] : [["Max. Kaufpreis für Zielrendite", isFinite(L.kmax) ? Math.floor(L.kmax) : null, "€/m²"]]),
     ["Mindestmiete: Rate gedeckt", rd(L.hNull), "€/m²"], ["Mindestmiete für Ratendeckung", rd(L.hDscr), "€/m²"], [],

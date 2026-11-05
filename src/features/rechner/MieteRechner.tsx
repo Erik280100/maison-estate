@@ -288,7 +288,7 @@ export function MieteRechner() {
                 { k: "inst", label: "Instandhaltung Wohnung", unit: "€/m²·J" },
                 { k: "infl", label: "Inflation (VPI) p.a.", unit: "%", helper: "für Wertsicherung und Kosten" },
               ]} />
-              <Line label="Mietanpassung p.a. nach MieWeG" value={pct(growth(s, 2028), 2) + (s.mrg === "voll" ? " · 2027 max. 2 %" : "")} />
+              <Line label="Mietanpassung p.a. nach MieWeG" value={pct(growth(s), 2) + " ab 2028 · 2026/27 gedeckelt (1 %/2 %), konservativ nicht angesetzt"} />
             </Section>
 
             <Section title="Mieterwechsel & Zahlungsverzug">
@@ -298,9 +298,10 @@ export function MieteRechner() {
                 { k: "wRen", label: "Ausmalen, Reparaturen je Wechsel", unit: "€" },
                 { k: "rueck", label: "Verspätet bezahlte Miete", unit: "%", helper: "Anteil der Jahresmiete im Rückstand" },
                 { k: "verzD", label: "Ø Verzugsdauer", unit: "Mon." },
-                { k: "verzZ", label: "Verzugszinsen", unit: "%", helper: "gesetzlich 4 % p.a., § 1000 ABGB" },
+                { k: "verzZ", label: "Verzugszinsen", unit: "%", helper: "gesetzlich 4 % p.a., § 1000 ABGB; Zinssaldo gegenüber dem Kreditzins, wirkt nur minimal" },
+                { k: "ausfall", label: "Uneinbringliche Mieten", unit: "%", helper: "echter Mietausfall (Zahlungsunfähigkeit), zusätzlich zum Leerstand" },
               ]} />
-              <Line label="Wechselkosten p.a. · Verzug netto p.a." value={`${eur(r.wechselJ)} · ${eur(r.verzJ)}`} />
+              <Line label="Wechselkosten p.a. · Zinseffekt Verzug p.a." value={`${eur(r.wechselJ)} · ${eur(r.verzJ)}`} />
             </Section>
 
             <Section title="Finanzierung">
@@ -336,10 +337,11 @@ export function MieteRechner() {
                   { k: "immoest", label: "Immobilienertragsteuer beim Verkauf", unit: "%", when: (x) => x.stMode === "privat" },
                   { k: "koest", label: "Körperschaftsteuer", unit: "%", when: (x) => x.stMode === "gmbh" },
                   { k: "geb", label: "Gebäudeanteil", unit: "%", helper: "Grundanteil-VO, Graz meist 60–70 %" },
+                  { k: "sanJ", label: "Sanierung abschreiben über", unit: "Jahre", helper: "Instandsetzung: 15 Jahre (§ 28 Abs 2 EStG); Einrichtung 10 Jahre" },
                   { k: "afa", label: "AfA Wohngebäude", unit: "%" },
                 ]} />
                 <Checks s={s} set={setB} kunde={k} list={[
-                  { k: "beschl", label: "Beschleunigte AfA", helper: "Jahr 1 dreifach, Jahr 2 doppelt" },
+                  { k: "beschl", label: "Beschleunigte AfA", helper: "Nur für neu errichtete Wohngebäude (Fertigstellung bis 2026), nicht für den Kauf eines Bestandsobjekts. Mit Steuerberater klären." },
                   { k: "verlust", label: "Verluste mit Flip-Gewinnen verrechnen", helper: "Steuerersparnis in der GmbH", when: (x) => x.stMode === "gmbh" },
                 ]} />
               </Section>

@@ -49,7 +49,7 @@ export const D = {
   // Ankaufsnebenkosten
   grest: KREDIT_DEFAULTS.grunderwerbsteuerPct,
   eintr: KREDIT_DEFAULTS.grundbuchEintragungPct,
-  notar: 1.5,
+  notar: KREDIT_DEFAULTS.vertragserrichtungPct, // zzgl. USt, wie im Finanzierungsrechner
   maklerOn: false,
   makler: KREDIT_DEFAULTS.maklerprovisionPct,
   kaufSonst: 1500,
@@ -84,8 +84,8 @@ export const D = {
   finSonst: 0,
   // Verkauf
   verkM2: 4500,
-  provision: 2,
-  provisionUst: false,
+  provision: 3, // Makler-Honorar Verkauf: 3 % zzgl. 20 % USt = 3,6 % (marktüblich)
+  provisionUst: true,
   rlOn: true,
   // Stresstest
   stVk: -5,
@@ -131,7 +131,7 @@ export function rechne(v: V, gewerke: Gewerk[], nk: NkPos[], o: Opts = {}) {
   const kp = o.kp !== undefined ? o.kp : num(v.kauf);
   const grest = kp * p(v.grest);
   const eintr = kp * p(v.eintr);
-  const notar = kp * p(v.notar);
+  const notar = kp * p(v.notar) * (ustOpt ? 1 : ustF);
   const makler = !vers && v.maklerOn ? kp * p(v.makler) * (ustOpt ? 1 : ustF) : 0;
   const kaufSonst = num(v.kaufSonst);
   const kaufNk = grest + eintr + notar + makler + kaufSonst;
@@ -155,7 +155,9 @@ export function rechne(v: V, gewerke: Gewerk[], nk: NkPos[], o: Opts = {}) {
   const i = (p(v.zins) + (o.zinsAdd ?? 0) / 100) / 12;
   const G = Math.max(0, num(v.tilgFrei));
   const n = Math.max(1, Math.round(num(v.laufzeit) * 12));
-  const rate = kredit > 0 ? (i > 0 ? (kredit * i) / (1 - Math.pow(1 + i, -n)) : kredit / n) : 0;
+  // Tilgung beginnt erst nach den tilgungsfreien Monaten: Annuität über die Restlaufzeit n - G
+  const nT = Math.max(1, n - G);
+  const rate = kredit > 0 ? (i > 0 ? (kredit * i) / (1 - Math.pow(1 + i, -nT)) : kredit / nT) : 0;
   let b = kredit;
   let zinsen = 0;
   let tilg = 0;
@@ -190,12 +192,13 @@ export function rechne(v: V, gewerke: Gewerk[], nk: NkPos[], o: Opts = {}) {
   const erloes = ustOpt ? vk / ustF : vk;
   const provF = p(v.provision) * (v.provisionUst && !ustOpt ? ustF : 1);
   const prov = vk * provF;
-  const rl = v.rlOn ? vk * 0.01 : 0;
+  const rl = v.rlOn ? erloes * 0.01 : 0; // Kostenansatz für Gewährleistung, auf den Nettoerlös
 
   const tot = kp + kaufNk + sonder + san + finNk + zinsen + halte + prov + rl + mehr;
   const gewinn = erloes - tot;
   const marge = tot > 0 ? (gewinn / tot) * 100 : 0;
-  const ek = tot - kredit + tilg;
+  // Eingesetztes EK ohne Verkaufskosten (Provision, Vorsorge), die erst aus dem Erlös bezahlt werden
+  const ek = tot - prov - rl - kredit + tilg;
   const roiPa = ek > 0 && M > 0 ? ((gewinn / ek) * 12 * 100) / M : 0;
   const netto = gewinn > 0 ? gewinn * (1 - p(v.koest)) : gewinn;
 
@@ -251,7 +254,7 @@ export function limits(v: V, g: Gewerk[], nk: NkPos[]) {
   const slope = (t1 - t0) / 1000;
   const kmax = slope > 0 ? (r.erloes / (1 + ziel) - t0) / slope : NaN;
   const f = v.ustOpt ? 1 / (1 + num(v.ust) / 100) : 1;
-  const share = r.provF + (v.rlOn ? 0.01 : 0);
+  const share = r.provF + (v.rlOn ? 0.01 * f : 0);
   const rest = r.tot - r.prov - r.rl;
   const vmin = (rest * (1 + ziel)) / (f - share * (1 + ziel));
   const vbe = rest / (f - share);
@@ -263,7 +266,7 @@ export function halten(v: V, g: Gewerk[], nk: NkPos[]) {
   const r = rechne(v, g, nk);
   const p = (x: number) => num(x) / 100;
   const ustF = 1 + p(v.ust);
-  const ankauf = r.kp + r.grest + r.eintr + r.notar + r.makler / (v.ustOpt ? 1 : ustF);
+  const ankauf = r.kp + r.grest + r.eintr + (r.notar + r.makler) / (v.ustOpt ? 1 : ustF);
   const invest = ankauf + r.sanNet + r.finNk;
   const mieteJ = num(v.miete) * r.A * 12;
   const eff = mieteJ * (1 - p(v.leer));
@@ -274,7 +277,9 @@ export function halten(v: V, g: Gewerk[], nk: NkPos[]) {
   const kredit = r.kredit;
   const i = p(v.zins);
   const n = Math.max(num(v.laufzeit), 1);
-  const ann = kredit > 0 ? (i > 0 ? (kredit * i) / (1 - Math.pow(1 + i, -n)) : kredit / n) : 0;
+  // Monatsannuität x 12 (wie im Ankaufsrechner und Finanzierungsrechner), nicht jährliche Annuität
+  const nM = n * 12, iM = i / 12;
+  const ann = kredit > 0 ? 12 * (iM > 0 ? (kredit * iM) / (1 - Math.pow(1 + iM, -nM)) : kredit / nM) : 0;
   const zinsJ = kredit * i;
   const evs = netto - zinsJ - afaJ;
   const koest = evs > 0 ? evs * p(v.koest) : 0;

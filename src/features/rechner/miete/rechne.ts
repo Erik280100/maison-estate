@@ -10,10 +10,10 @@ export type S = {
   maklerOn: boolean; makler: number; sonst: number; sanM2: number; einr: number;
   mrg: Mrg; rw: number; zu: number; ab: number; befr: boolean; miete: number; extra: number; bk: number;
   leer: number; verw: number; rl: number; inst: number; infl: number;
-  wJ: number; wMM: number; wRen: number; rueck: number; verzD: number; verzZ: number;
+  wJ: number; wMM: number; wRen: number; rueck: number; verzD: number; verzZ: number; ausfall: number;
   ekMode: "pct" | "eur"; fk: number; ekEur: number;
   zins: number; zinsFix: number; zins2: number; lz: number; tf: number; sond: number; bearb: number; pfand: number; dscrZiel: number;
-  stMode: "gmbh" | "privat"; geb: number; afa: number; beschl: boolean; koest: number; verlust: boolean; grenz: number; immoest: number;
+  stMode: "gmbh" | "privat"; geb: number; afa: number; beschl: boolean; sanJ: number; koest: number; verlust: boolean; grenz: number; immoest: number;
   docBk: boolean; docNwg: boolean; docEa: boolean; docHv: boolean;
   H: number; mw: number; wert: number; vkk: number; ziel: number;
 };
@@ -26,10 +26,10 @@ export const DEFAULTS: S = {
   grest: 3.5, eintr: 1.1, notar: 1.5, notarFix: 0, maklerOn: false, makler: 3, sonst: 0, sanM2: 250, einr: 0,
   mrg: "teil", rw: 9.3, zu: 10, ab: 0, befr: true, miete: 11.5, extra: 60, bk: 2.6,
   leer: 3, verw: 25, rl: 1, inst: 10, infl: 2.5,
-  wJ: 5, wMM: 2, wRen: 1500, rueck: 5, verzD: 1, verzZ: 4,
+  wJ: 5, wMM: 2, wRen: 1500, rueck: 5, verzD: 1, verzZ: 4, ausfall: 0.5,
   ekMode: "pct", fk: 60, ekEur: 0,
-  zins: 3.8, zinsFix: 0, zins2: 4.5, lz: 30, tf: 0, sond: 0, bearb: 1, pfand: 1.2, dscrZiel: 1.2,
-  stMode: "gmbh", geb: 70, afa: 1.5, beschl: true, koest: 23, verlust: true, grenz: 40, immoest: 30,
+  zins: 3.5, zinsFix: 0, zins2: 4.5, lz: 30, tf: 0, sond: 0, bearb: 1, pfand: 1.44, dscrZiel: 1.2,
+  stMode: "gmbh", geb: 70, afa: 1.5, beschl: false, sanJ: 15, koest: 23, verlust: true, grenz: 40, immoest: 30,
   docBk: false, docNwg: false, docEa: false, docHv: false,
   H: 10, mw: 3300, wert: 2.5, vkk: 3, ziel: 4,
 };
@@ -40,9 +40,9 @@ export const EXCEL_TPL: S = {
   name: "Excel-Vorlage 58 m²", A: 58, kaufM2: 200000 / 58, kpBrutto: true, nettoAnt: 82,
   grest: 3.5, eintr: 1.1, notar: 1.5, notarFix: 800, maklerOn: true, makler: 3.6, sonst: 500, sanM2: 0, einr: 0,
   mrg: "teil", miete: 10.6, extra: 0, bk: 0, leer: 0, verw: 0, rl: 0, inst: 0, infl: 2,
-  wJ: 0, wMM: 0, wRen: 0, rueck: 0, verzD: 0,
+  wJ: 0, wMM: 0, wRen: 0, rueck: 0, verzD: 0, ausfall: 0,
   ekMode: "eur", ekEur: 34000, zins: 3, zinsFix: 0, lz: 35, tf: 0, sond: 0, bearb: 3, pfand: 1.44,
-  stMode: "privat", grenz: 40, geb: 80, afa: 1.5, beschl: true, H: 35, mw: 200000 / 58, wert: 2, vkk: 0,
+  stMode: "privat", grenz: 40, geb: 80, afa: 1.5, beschl: true, sanJ: 15, H: 35, mw: 200000 / 58, wert: 2, vkk: 0,
 };
 
 export const MARKT = 15.15; // Angebotsmiete Graz brutto €/m² (ImmoScout24, Mai 2026)
@@ -72,12 +72,11 @@ export function hmzOf(s: S) {
   return n(s.miete);
 }
 
-export function growth(s: S, year: number) {
+/** Jährliche Mietanpassung ab 2028 (MieWeG): voller VPI bis 3 %, darüber nur die Hälfte. 2026 (max. 1 %) und 2027 (max. 2 %) sind gedeckelt und werden konservativ nicht angesetzt. */
+export function growth(s: S) {
   const inf = n(s.infl) / 100;
   if (s.mrg === "aus") return inf;
-  let g = inf <= 0.03 ? inf : 0.03 + (inf - 0.03) / 2;
-  if (s.mrg === "voll" && year === 2027) g = Math.min(g, 0.02);
-  return g;
+  return inf <= 0.03 ? inf : 0.03 + (inf - 0.03) / 2;
 }
 
 /** Käufersicht: Kaufpreis = Marktwert, keine Sanierung, keine Steuer. */
@@ -119,7 +118,7 @@ export function calc(s: S, o: Opt = {}) {
 
   const hmz = o.hmz !== undefined ? o.hmz : hmzOf(s);
   const mieteJ = hmz * A * 12 + n(s.extra) * 12, leer = pc(s.leer), bk = n(s.bk);
-  const verzF = pc(s.rueck) * (pc(s.verzZ) - pc(s.zins)) * n(s.verzD) / 12, vf = 1 + verzF;
+  const verzF = pc(s.rueck) * (pc(s.verzZ) - pc(s.zins)) * n(s.verzD) / 12, vf = 1 + verzF - pc(s.ausfall); // Zinseffekt des Verzugs minus uneinbringliche Mieten
   const wJ = n(s.wJ), wMM = n(s.wMM);
   const kH = wJ > 0 ? (wMM * A) / wJ : 0; // Maklerkosten hängen am Hauptmietzins
   const kostenFix = n(s.verw) * 12 + n(s.rl) * A * 12 + n(s.inst) * A + leer * bk * A * 12 + (wJ > 0 ? (wMM * bk * A + n(s.wRen)) / wJ : 0);
@@ -133,13 +132,15 @@ export function calc(s: S, o: Opt = {}) {
   const H = Math.min(Math.max(Math.round(n(s.H) || 1), 1), 50), inf = pc(s.infl), nMon = lz * 12, sond = n(s.sond);
 
   const priv = s.stMode === "privat", kpAfa = s.kpBrutto ? kpIn : kp;
-  const afaBase = (kpAfa + nk) * pc(s.geb) + san, grundAnt = (kpAfa + nk) * (1 - pc(s.geb));
+  // Gebäude: AfA mit Satz (ggf. beschleunigt). Sanierung (Instandsetzung): gleichmäßig über sanJ Jahre. Einrichtung: 10 Jahre.
+  const afaBase = (kpAfa + nk) * pc(s.geb), grundAnt = (kpAfa + nk) * (1 - pc(s.geb));
+  const sanBase = n(s.sanM2) * A, einrBase = n(s.einr), sanN = Math.max(Math.round(n(s.sanJ)) || 15, 1), EINR_J = 10;
   const afaR = pc(s.afa), kst = priv ? pc(s.grenz) : pc(s.koest), verl = priv || s.verlust, finJ = finK / lz;
 
-  let bal = kredit, mf = 1, cf0 = 1, cumAfa = 0, mon = 0, R = annM;
+  let bal = kredit, mf = 1, cf0 = 1, cumAfa = 0, cumSan = 0, cumEinr = 0, mon = 0, R = annM;
   const rows: Row[] = [], flows = [-ek];
   for (let t = 1; t <= H; t++) {
-    if (t > 1) { mf *= 1 + growth(s, 2026 + t); cf0 *= 1 + inf; }
+    if (t > 1) { mf *= 1 + growth(s); cf0 *= 1 + inf; }
     const eff = mieteJ * (1 - leer) * mf * vf, kost = kostenFix * cf0 + kH * hmz * mf, ertrag = eff - kost;
     let zinsJ = 0, tilgJ = 0, paid = 0;
     for (let m = 0; m < 12; m++) {
@@ -153,15 +154,18 @@ export function calc(s: S, o: Opt = {}) {
       if (sond > 0 && mon % 12 === 0 && bal > 0) { const x = Math.min(sond, bal); bal -= x; tilgJ += x; paid += x; }
     }
     const mult = s.beschl ? (t === 1 ? 3 : t === 2 ? 2 : 1) : 1;
-    const afaJ = Math.min(afaBase * afaR * mult, Math.max(afaBase - cumAfa, 0));
-    cumAfa += afaJ;
+    const afaG = Math.min(afaBase * afaR * mult, Math.max(afaBase - cumAfa, 0));
+    const afaS = Math.min(sanBase / sanN, Math.max(sanBase - cumSan, 0));
+    const afaE = Math.min(einrBase / EINR_J, Math.max(einrBase - cumEinr, 0));
+    cumAfa += afaG; cumSan += afaS; cumEinr += afaE;
+    const afaJ = afaG + afaS + afaE;
     const fa = t <= lz ? finJ : 0, evs = ertrag - zinsJ - afaJ - fa, st = evs > 0 ? evs * kst : verl ? evs * kst : 0;
     const cf = ertrag - paid - st, wertT = n(s.mw) * A * Math.pow(1 + pc(s.wert), t);
     rows.push({ t, eff, mieteM: eff / 12, kost, ertrag, zinsJ, tilgJ, afaJ, st, cf, bal: Math.max(bal, 0), paid, wertT, vorAfa: ertrag - zinsJ, evs, netto: evs - st });
     flows.push(cf);
   }
   const sale = n(s.mw) * A * Math.pow(1 + pc(s.wert), H), vkk = sale * pc(s.vkk);
-  const buch = afaBase - cumAfa + grundAnt + Math.max(finK - finJ * Math.min(H, lz), 0);
+  const buch = afaBase - cumAfa + (sanBase - cumSan) + (einrBase - cumEinr) + grundAnt + Math.max(finK - finJ * Math.min(H, lz), 0);
   const gain = sale - vkk - buch;
   const exTax = priv ? (gain > 0 ? gain * pc(s.immoest) : 0) : gain > 0 ? gain * kst : s.verlust ? gain * kst : 0;
   const exNet = sale - vkk - Math.max(bal, 0) - exTax;
@@ -171,7 +175,7 @@ export function calc(s: S, o: Opt = {}) {
   return {
     A, kp, kpIn, nk, nkR, nkFix, cK, sonst, fkEff, fin, basis, priv, sumCf,
     mieteKredit: kredit > 0 ? mieteJ / kredit : NaN,
-    san, kredit, finK, inv, ek, hmz, mieteJ, kostenJ, kostenFix, kH, noi, verzJ, verzF,
+    san, kredit, finK, inv, ek, hmz, mieteJ, vf, kostenJ, kostenFix, kH, noi, verzJ, verzF,
     wechselJ: wJ > 0 ? (wMM * (hmz + bk) * A + n(s.wRen)) / wJ : 0,
     tf, annM, annJ, rows, sale, vkk, buch, gain, exTax, exNet, H,
     net: inv > 0 ? noi / inv : 0,
@@ -187,7 +191,7 @@ export type Result = ReturnType<typeof calc>;
 export function limits(s: S) {
   const r = calc(s), ziel = pc(s.ziel), f = 1 + r.fkEff * r.fin;
   const kmax = ziel > 0 ? ((r.noi / ziel) / f - r.san - r.nkFix - r.sonst) / r.cK : NaN;
-  const vf = 1 + r.verzF, leer = pc(s.leer);
+  const vf = r.vf, leer = pc(s.leer);
   const fac = r.A * 12 * (1 - leer) * vf - r.kH, base = n(s.extra) * 12 * (1 - leer) * vf - r.kostenFix;
   const need = (x: number) => (fac > 0 ? (x - base) / fac : NaN);
   return { kmax: kmax / r.A, hDscr: need(n(s.dscrZiel) * r.annJ), hNull: need(r.annJ), hZiel: need(ziel * r.inv) };

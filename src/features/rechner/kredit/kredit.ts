@@ -36,7 +36,7 @@ export const KREDIT_DEFAULTS: KreditSaetze = {
   pfandrechtPct: 1.2,
   nebengebuehrensicherstellungPct: 20,
   sonstigeKreditNK: 0,
-  gebaeudeanteilPct: 80,
+  gebaeudeanteilPct: 70,
   afaSatzPct: 1.5,
 }
 
@@ -264,10 +264,13 @@ export function berechneAfaBemessungsgrundlage(
 }
 
 /**
- * Beschleunigte AfA für Gebäude (§ 8 Abs. 1a EStG): im ersten Jahr das Dreifache, im zweiten
- * Jahr das Zweifache des linearen AfA-Satzes, ab dem dritten Jahr der normale (lineare) Satz.
+ * AfA-Verlauf. Standard: linearer Satz. Mit `beschleunigt` (nur für neu errichtete Wohngebäude, Wohnbaupaket
+ * 2024, Fertigstellung bis 2026 — NICHT für den Kauf eines Bestandsobjekts): im ersten Jahr das Dreifache,
+ * im zweiten das Zweifache, danach der normale Satz.
  */
-export function berechneAfaJahre(bemessungsgrundlage: number, afaSatzPct: number, jahre: number): AfaJahr[] {
+export function berechneAfaJahre(
+  bemessungsgrundlage: number, afaSatzPct: number, jahre: number, beschleunigt = false
+): AfaJahr[] {
   const basis = Math.max(0, bemessungsgrundlage)
   const satz = Math.max(0, afaSatzPct) / 100
   const n = Math.max(0, Math.round(jahre))
@@ -275,7 +278,7 @@ export function berechneAfaJahre(bemessungsgrundlage: number, afaSatzPct: number
   const ergebnisse: AfaJahr[] = []
   let kumuliert = 0
   for (let j = 1; j <= n; j++) {
-    const faktor = j === 1 ? 3 : j === 2 ? 2 : 1
+    const faktor = beschleunigt ? (j === 1 ? 3 : j === 2 ? 2 : 1) : 1
     const afa = Math.max(0, Math.min(basis * satz * faktor, basis - kumuliert))
     kumuliert += afa
     ergebnisse.push({ jahr: j, faktor, afa, afaKumuliert: kumuliert })

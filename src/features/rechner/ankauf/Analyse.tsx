@@ -226,7 +226,7 @@ export function Analyse({
     <Stack spacing={3}>
       <Section
         title={vers ? "Sensitivität: Gebot gegen Verkauf" : "Sensitivität: Einkauf gegen Verkauf"}
-        intro="Nettomarge bei anderem Einkaufs- und Verkaufspreis. Fett = aktueller Ansatz."
+        intro="Marge vor Steuer (auf Kosten) bei anderem Einkaufs- und Verkaufspreis. Fett = aktueller Ansatz."
       >
         <Tbl head={[`${vers ? "Gebot" : "Kauf"} ↓ / Verkauf →`, ...vs.map((x) => `${x.toLocaleString("de-AT")} €/m²`)]} rows={sens} />
       </Section>
@@ -285,7 +285,8 @@ export function Analyse({
           <Line label="Eigenkapital inkl. Reserve" value={eur(peak + res)} strong />
           <Line label={`KöSt-Rückstellung beim Verkauf (${num(v.koest)} %)`} value={eur(r.gewinn > 0 ? r.gewinn - r.netto : 0)} />
           <Line label="Frei verfügbar nach Verkauf und KöSt" value={eur(C.R[C.N].verk - (r.gewinn > 0 ? r.gewinn - r.netto : 0))} />
-          <Line label="Gewährleistungsrücklage" value={r.rl ? `${eur(r.rl)} · 3 Jahre ab Übergabe gebunden` : "nicht aktiviert"} />
+          <Line label="Gewährleistungsvorsorge" value={r.rl ? `${eur(r.rl)} · Kostenansatz für 3 Jahre Gewährleistung; Nicht Verbrauchtes ist Zusatzgewinn` : "nicht aktiviert"} />
+          <Line label="Gewinn nach KöSt und KESt (bei Vollausschüttung)" value={eur(r.netto > 0 ? r.netto * (1 - kest) : r.netto)} />
         </Stack>
       </Section>
 

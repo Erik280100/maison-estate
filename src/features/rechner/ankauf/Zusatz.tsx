@@ -122,7 +122,7 @@ export function Zusatz({ v, set, setGes, gewerke, nk, z, setZ, REF, setREF, objs
   const ist = istCalc(v, z, gewerke, nk), I = cats(ist), Pl: Omit<Plan, "am"> = z.plan || cats(r), hasPlan = !!z.plan;
   const rowsPI: [string, keyof Omit<Plan, "am">, number, string?][] = [
     ["Ankauf + Nebenkosten", "ank", 1], ["Sanierung", "san", 1], ["Finanzierung", "fin", 1], ["Haltekosten", "halte", 1], ["Vertrieb + Rücklage", "vertr", 1],
-    ["Sonstige Mehrkosten", "mehr", 1], ["Gesamtkosten", "tot", 1, "total"], ["Erlös", "erl", -1], ["Gewinn vor Steuern", "gew", -1], ["Nettomarge", "marge", -1, "p"], ["Dauer", "M", 1, "m"],
+    ["Sonstige Mehrkosten", "mehr", 1], ["Gesamtkosten", "tot", 1, "total"], ["Erlös", "erl", -1], ["Gewinn vor Steuern", "gew", -1], ["Marge vor Steuer", "marge", -1, "p"], ["Dauer", "M", 1, "m"],
   ];
 
   // ---- Portfolio ----
@@ -155,7 +155,7 @@ export function Zusatz({ v, set, setGes, gewerke, nk, z, setZ, REF, setREF, objs
               <Line strong label="Eigenkapital inkl. Reserve" value={eur(C.peak + res)} />
               <Line label="KöSt-Rückstellung beim Verkauf" value={eur(koest)} />
               <Line label="Frei verfügbar nach Verkauf und KöSt" value={eur(C.R[C.N].verk - koest)} />
-              <Line label="Gewährleistungsrücklage" value={r.rl ? eur(r.rl) + " · 3 Jahre ab Übergabe gebunden" : "nicht aktiviert"} />
+              <Line label="Gewährleistungsvorsorge" value={r.rl ? eur(r.rl) + " · Kostenansatz, 3 Jahre Gewährleistung" : "nicht aktiviert"} />
             </Stack>
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>

@@ -24,6 +24,7 @@ import Card from "@mui/material/Card";
 import Checkbox from "@mui/material/Checkbox";
 import Collapse from "@mui/material/Collapse";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import Switch from "@mui/material/Switch";
 import Grid from "@mui/material/Grid";
 import InputAdornment from "@mui/material/InputAdornment";
 import Stack from "@mui/material/Stack";
@@ -156,6 +157,7 @@ export function KreditRechner() {
   const [eigenmittel, setEigenmittel] = useState("80000");
   const [laufzeit, setLaufzeit] = useState("35");
   const [zinssatz, setZinssatz] = useState("3.5");
+  const [afaBeschleunigt, setAfaBeschleunigt] = useState(false);
   const [mitMakler, setMitMakler] = useState(true);
   const [nkMitfinanziert, setNkMitfinanziert] = useState(true);
   const [saetzeOffen, setSaetzeOffen] = useState(false);
@@ -199,13 +201,13 @@ export function KreditRechner() {
       saetze.gebaeudeanteilPct,
       kredit.kaufNK.summe,
     );
-    const afaJahre = berechneAfaJahre(afaBemessungsgrundlage, saetze.afaSatzPct, laufzeitClamped);
+    const afaJahre = berechneAfaJahre(afaBemessungsgrundlage, saetze.afaSatzPct, laufzeitClamped, afaBeschleunigt);
     const warnungen = [...kredit.warnungen];
     if (laufzeitClamped > 35) {
       warnungen.push("Laufzeit über 35 Jahre — über der FMA-Empfehlung für nachhaltige Immobilienfinanzierung.");
     }
     return { kredit, plan, effektivzins, afaBemessungsgrundlage, afaJahre, warnungen };
-  }, [kaufpreisNum, eigenmittelNum, mitMakler, nkMitfinanziert, saetze, zinssatzClamped, laufzeitClamped]);
+  }, [kaufpreisNum, eigenmittelNum, mitMakler, nkMitfinanziert, saetze, zinssatzClamped, laufzeitClamped, afaBeschleunigt]);
 
   // Kumulierte Zinsen je Monat, fürs Tooltip auf der Restschuld-Kurve.
   const kumZinsen = useMemo(() => {
@@ -489,7 +491,7 @@ export function KreditRechner() {
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4, lg: 3 }}>
                   <NumField
-                    label="AfA-Satz (linear, ab 3. Jahr)"
+                    label="AfA-Satz (linear)"
                     suffix="%"
                     step={0.1}
                     value={String(saetze.afaSatzPct)}
@@ -497,6 +499,15 @@ export function KreditRechner() {
                   />
                 </Grid>
               </Grid>
+              <FormControlLabel
+                sx={{ mt: 1 }}
+                control={<Switch checked={afaBeschleunigt} onChange={(e) => setAfaBeschleunigt(e.target.checked)} />}
+                label="Beschleunigte AfA (3× im 1. Jahr, 2× im 2. Jahr)"
+              />
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                Nur für neu errichtete Wohngebäude (Wohnbaupaket 2024, Fertigstellung bis 2026), nicht für den Kauf eines
+                Bestandsobjekts. Mit dem Steuerberater klären.
+              </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1.5 }}>
                 Grundanteilverordnung 2016: 20 % Grundanteil (= 80 % Gebäudeanteil) nur bei Gemeinden unter
                 100.000 Einwohnern und einem Baulandpreis unter 400 €/m². Sonst gelten 30 % Grundanteil

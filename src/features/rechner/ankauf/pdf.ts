@@ -30,7 +30,7 @@ export async function pdfObjektakte(v: V, g: Gewerk[], nk: NkPos[], z: Zus) {
     `${z.adresse || ""}   Status: ${z.status}   Einkauf: ${r.vers ? "Versteigerung" : "freier Kauf"}   Stand: ${new Date().toLocaleDateString("de-AT")}`);
   head("Ergebnis");
   ([
-    ["Nettomarge auf Gesamtkosten", P(r.marge)], ["Erlös", E(r.erloes)], ["Gesamtkosten", E(r.tot)], ["Gewinn vor Steuern", E(r.gewinn)],
+    ["Marge vor Steuer auf Gesamtkosten", P(r.marge)], ["Erlös", E(r.erloes)], ["Gesamtkosten", E(r.tot)], ["Gewinn vor Steuern", E(r.gewinn)],
     ["Gewinn nach KöSt", E(r.netto)], ["Eigenkapitalbedarf", E(r.ek)], ["Dauer", r.M + " Monate"],
     ["Tilgung vor Verkauf", r.tilg ? E(r.tilg) + " (Rate " + E(r.rate) + "/Mon.)" : "keine"],
     [r.vers ? "Maximalgebot für Zielmarge" : "Max. Kaufpreis für Zielmarge", r.vers ? E(L.kmax) : Math.floor(L.kmax / r.A).toLocaleString("de-AT") + " EUR/m²"],
@@ -38,7 +38,7 @@ export async function pdfObjektakte(v: V, g: Gewerk[], nk: NkPos[], z: Zus) {
   head("Kostenaufstellung");
   ([
     ["Kaufpreis", r.kp], ["Ankaufsnebenkosten", r.kaufNk], ["Sonderumlage", r.sonder], ["Sanierung", r.san], ["Finanzierungsnebenkosten", r.finNk],
-    ["Zinsen", r.zinsen], ["Haltekosten", r.halte], ["Verkaufsprovision", r.prov], ["Gewährleistungsrücklage", r.rl],
+    ["Zinsen", r.zinsen], ["Haltekosten", r.halte], ["Verkaufsprovision", r.prov], ["Gewährleistungsvorsorge", r.rl],
   ] as [string, number][]).filter(([, x]) => x).forEach(([a, x]) => line(a, E(x)));
   line("Gesamtkosten", E(r.tot), true);
   if (v.sanModus !== "pausch") {
