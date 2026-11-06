@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import { AnkaufVerkaufRechner } from "./AnkaufVerkaufRechner";
+import { BewertungsRechner } from "./BewertungsRechner";
 import { KreditRechner } from "./KreditRechner";
 import { MieteRechner } from "./MieteRechner";
 import { UmschuldungsRechner } from "./UmschuldungsRechner";
@@ -35,6 +36,13 @@ export const rechner: Rechner[] = [
     title: "Umschuldungsrechner",
     description: "Vergleich einer bestehenden Finanzierung mit einer Umschuldung.",
     Component: UmschuldungsRechner,
+  },
+  {
+    slug: "bewertung",
+    title: "Wohnungsbewertung",
+    description:
+      "Marktwert einer Wohnung vor dem Kauf (Graz, Graz-Umgebung, Leibnitz) aus amtlichen Kaufpreisen – mit Kaufpreis-Check, Belehnwert und Ertragswert-Gegenprobe.",
+    Component: BewertungsRechner,
   },
   {
     slug: "mietrechner",

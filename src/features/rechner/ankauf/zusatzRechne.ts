@@ -90,28 +90,46 @@ const n0 = (v: number) => Math.round(v).toLocaleString("de-AT");
 
 export type Bewertung = { base: number; hin: string; adj: [string, number, number][]; qm: number; lo: number; hi: number; tot: number };
 
-export function bewert(REF: Ref, z: Zus, flaeche: number, zustand: string): Bewertung {
-  const A = Math.max(num(flaeche), 1), reg = z.bwRegion || "Graz-Stadt", bi = Math.max(0, BAU.indexOf(z.bwBau)), out = z.bwAussen ? 3 : 0;
-  const md = REF.modi[z.bwMode] || REF.modi.realistisch;
+/** Eingabe des Bewertungskerns; unabhängig vom Ankauf-Objekt (Zus). */
+export type BewertParam = {
+  region: string; bau: string; aussen: boolean; flaeche: number; zustand: string;
+  lage: string; stock: string; energie: string; stoer: string; mode: BwMode; stell: number;
+  /** Zusätzlicher Lagefaktor (Bezirk bzw. Gemeinde): [Bezeichnung, Zu-/Abschlag in %]. */
+  lagefaktor?: [string, number];
+};
+
+export function bewertKern(REF: Ref, p: BewertParam): Bewertung {
+  const A = Math.max(num(p.flaeche), 1), reg = p.region || "Graz-Stadt", bi = Math.max(0, BAU.indexOf(p.bau)), out = p.aussen ? 3 : 0;
+  const md = REF.modi[p.mode] || REF.modi.realistisch;
   const L: [string, number, number][] = [];
   let base: number, hin: string;
-  const zz = REF.zustand[zustand] || [0, 0];
+  const zz = REF.zustand[p.zustand] || [0, 0];
   if (REF.basis[reg]) {
     const row = REF.basis[reg], own = row[bi][out + gk(A)], neu = row[2][out + gk(A)];
     base = own + ((neu - own) * (zz[1] || 0)) / 100;
-    hin = `${reg}, ${BAU[bi]}, ${["unter 58", "58–78", "über 78"][gk(A)]} m², ${z.bwAussen ? "mit" : "ohne"} Außenfläche: ${n0(own)} €/m²` + (zz[1] ? ` · ${zz[1]} % Richtung Neubauniveau ${n0(neu)} €/m²` : "");
+    hin = `${reg}, ${BAU[bi]}, ${["unter 58", "58–78", "über 78"][gk(A)]} m², ${p.aussen ? "mit" : "ohne"} Außenfläche: ${n0(own)} €/m²` + (zz[1] ? ` · ${zz[1]} % Richtung Neubauniveau ${n0(neu)} €/m²` : "");
   } else {
     base = REF.at; hin = `Österreich-Median ${n0(REF.at)} €/m² (grobe Näherung, ohne Baujahr)`;
   }
-  if (zz[0]) L.push(["Zustand: " + zustand, zz[0], 1]);
+  if (zz[0]) L.push(["Zustand: " + p.zustand, zz[0], 1]);
   L.unshift(["Marktentwicklung seit Datenstand", num(REF.markt) * md.markt, 0]);
-  if (reg === "Graz-Stadt") { const b = REF.bezirke.find((x) => x[0] === z.bwBezirk); if (b) L.push(["Bezirk " + b[0] + " (" + b[2] + ")", (b[1] - 1) * 100, 0]); }
+  if (p.lagefaktor) L.push([p.lagefaktor[0], p.lagefaktor[1], 0]);
   const sc = (val: string, grp: Record<string, number>) => { const v = grp[val]; if (v !== undefined) L.push([val, v, 1]); };
-  sc(z.bwLage, REF.lage); sc(z.bwStock, REF.stock); sc(z.bwEnergie, REF.energie); sc(z.bwStoer, REF.stoer);
-  const adj = L.map(([nm, p, s]) => { let q = p; if (s === 1) q = p > 0 ? p * md.up : p * md.down; return [nm, p, q] as [string, number, number]; });
-  if (md.adj) adj.push(["Bewertungsmodus " + MODENAME[z.bwMode || "realistisch"], md.adj, md.adj]);
+  sc(p.lage, REF.lage); sc(p.stock, REF.stock); sc(p.energie, REF.energie); sc(p.stoer, REF.stoer);
+  const adj = L.map(([nm, pp, s]) => { let q = pp; if (s === 1) q = pp > 0 ? pp * md.up : pp * md.down; return [nm, pp, q] as [string, number, number]; });
+  if (md.adj) adj.push(["Bewertungsmodus " + MODENAME[p.mode || "realistisch"], md.adj, md.adj]);
   const qm = adj.reduce((v, a) => v * (1 + a[2] / 100), base);
-  return { base, hin, adj, qm, lo: qm * (1 - REF.spanne / 100), hi: qm * (1 + REF.spanne / 100), tot: qm * A + num(z.bwStell) };
+  return { base, hin, adj, qm, lo: qm * (1 - REF.spanne / 100), hi: qm * (1 + REF.spanne / 100), tot: qm * A + num(p.stell) };
+}
+
+export function bewert(REF: Ref, z: Zus, flaeche: number, zustand: string): Bewertung {
+  const reg = z.bwRegion || "Graz-Stadt";
+  let lagefaktor: [string, number] | undefined;
+  if (reg === "Graz-Stadt") { const b = REF.bezirke.find((x) => x[0] === z.bwBezirk); if (b) lagefaktor = ["Bezirk " + b[0] + " (" + b[2] + ")", (b[1] - 1) * 100]; }
+  return bewertKern(REF, {
+    region: reg, bau: z.bwBau, aussen: z.bwAussen, flaeche, zustand, lage: z.bwLage, stock: z.bwStock,
+    energie: z.bwEnergie, stoer: z.bwStoer, mode: z.bwMode, stell: z.bwStell, lagefaktor,
+  });
 }
 
 // ---------------------------------------------------------------------------
