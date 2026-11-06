@@ -3,7 +3,7 @@ import AccountBalanceRounded from "@mui/icons-material/AccountBalanceRounded";
 import ApartmentRounded from "@mui/icons-material/ApartmentRounded";
 import ChecklistRounded from "@mui/icons-material/ChecklistRounded";
 import CalculateRounded from "@mui/icons-material/CalculateRounded";
-import { rechner } from "@/features/rechner/registry";
+import { bereiche, rechner } from "@/features/rechner/registry";
 import { Kacheln } from "./Kacheln";
 
 const tiles = [
@@ -30,7 +30,7 @@ const tiles = [
   },
   ...rechner.map((r) => ({
     href: `/intern/rechner/${r.slug}/`,
-    kicker: "Rechner",
+    kicker: bereiche[r.bereich].kicker,
     title: r.title,
     text: r.description,
     icon: <CalculateRounded />,

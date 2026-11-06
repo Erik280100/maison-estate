@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import Typography from "@mui/material/Typography";
 import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
 import { AppLink } from "@/components/ui/AppLink";
-import { rechner } from "@/features/rechner/registry";
+import Chip from "@mui/material/Chip";
+import { bereiche, rechner } from "@/features/rechner/registry";
 
 export function generateStaticParams() {
   return rechner.map((r) => ({ slug: r.slug }));
@@ -36,7 +37,14 @@ export default async function RechnerPage({
       >
         <ArrowBackRounded fontSize="small" /> Rechner
       </AppLink>
-      <Typography variant="h3" component="h1" sx={{ mt: 2, mb: 4 }}>
+      <Chip
+        label={bereiche[r.bereich].label}
+        size="small"
+        color={r.bereich === "einkauf" ? "secondary" : "primary"}
+        variant="outlined"
+        sx={{ display: "flex", width: "fit-content", mt: 2 }}
+      />
+      <Typography variant="h3" component="h1" sx={{ mt: 1, mb: 4 }}>
         {r.title}
       </Typography>
       <r.Component />
