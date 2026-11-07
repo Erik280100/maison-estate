@@ -392,7 +392,7 @@ export function AnkaufVerkaufRechner() {
               <Details title="Betriebskosten & Strom während der Haltedauer" sum={`${eur(r.halteM)} / Monat · ${eur(r.halte)}`}>
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <NumField label="Betriebskosten + Rücklage" suffix="€/Monat" value={v.hBk} onChange={set("hBk")} />
+                    <NumField label="Betriebskosten + Rücklage" suffix="€/m²·Monat" value={v.hBk} onChange={set("hBk")} helper={`= ${eur(num(v.hBk) * num(v.flaeche))} / Monat bei ${num(v.flaeche)} m²`} />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <NumField label="Strom, Heizung, Gas" suffix="€/Monat" value={v.hEn} onChange={set("hEn")} />

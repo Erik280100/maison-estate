@@ -16,7 +16,7 @@ export type S = {
   // Finanzierung
   kreditPct: number; zins: number; lz: number; vertrag: number; pfand: number; ngs: number;
   // Annahmen
-  mietSteig: number; wert: number; leer: number; kosten: number;
+  mietSteig: number; wert: number; leer: number; kostenM2: number;
   // Steuer
   grenz: number; geb: number; afa: number; beschl: boolean; gbk: boolean;
   // Zuzahlung
@@ -29,7 +29,7 @@ export const DEFAULTS: S = {
   A: 66, miete: 9.47, kp: 175000, ust: 20,
   kv: 1.5, notar: 1000, eintr: 1.1, grest: 3.5, makler: 3.6,
   kreditPct: 85, zins: 3.8, lz: 34, vertrag: 3, pfand: 1.2, ngs: 20,
-  mietSteig: 2, wert: 2, leer: 0, kosten: 0,
+  mietSteig: 2, wert: 2, leer: 0, kostenM2: 0,
   grenz: 40, geb: 80, afa: 1.5, beschl: true, gbk: false,
   zuz: 0, modus: "tilgen", depotRend: 5, kest: 27.5, flvPerf: 6, vfe: 1,
 };
@@ -84,7 +84,7 @@ export function calc(s: S) {
   const mieteM0 = n(s.miete) * A, mieteJ0 = mieteM0 * 12;
   const mietrendite = kp > 0 ? mieteJ0 / kp : 0;
   const ekRenditeHebel = ek > 0 ? mietrendite + ((mietrendite - pc(s.zins)) * maxKredit) / ek : NaN;
-  const nettoRendite = summeOhneKredit > 0 ? (mieteJ0 * (1 - pc(s.leer)) - n(s.kosten) * 12) / summeOhneKredit : 0;
+  const nettoRendite = summeOhneKredit > 0 ? (mieteJ0 * (1 - pc(s.leer)) - n(s.kostenM2) * A * 12) / summeOhneKredit : 0;
 
   const afaBasis = summeOhneKredit * pc(s.geb), afaSatz = pc(s.afa), kst = pc(s.grenz);
   const finJ = kreditNK / lz;
@@ -100,7 +100,7 @@ export function calc(s: S) {
 
     for (let t = 1; t <= lz; t++) {
       const mf = Math.pow(1 + pc(s.mietSteig), t - 1);
-      const miete = mieteJ0 * (1 - pc(s.leer)) * mf, kosten = n(s.kosten) * 12 * mf, ertrag = miete - kosten;
+      const miete = mieteJ0 * (1 - pc(s.leer)) * mf, kosten = n(s.kostenM2) * A * 12 * mf, ertrag = miete - kosten;
       let zinsJ = 0, tilgJ = 0, rateJ = 0, zuzJ = 0, rueckJ = 0;
       for (let m = 0; m < 12; m++) {
         mon++;

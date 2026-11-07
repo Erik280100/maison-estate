@@ -70,7 +70,7 @@ const ANNAHMEN: NF<S>[] = [
   { k: "mietSteig", label: "Mietsteigerung p.a.", unit: "%", helper: "Wertsicherung, Excel: 2 %" },
   { k: "wert", label: "Wertsteigerung der Wohnung p.a.", unit: "%", helper: "Excel: 2 %" },
   { k: "leer", label: "Leerstand / Mietausfall", unit: "%", helper: "Excel: 0 %" },
-  { k: "kosten", label: "Nicht umlegbare Kosten", unit: "€/Monat", helper: "z. B. Verwaltung, Rücklage" },
+  { k: "kostenM2", label: "Nicht umlegbare Kosten inkl. Rücklage", unit: "€/m²·Monat", helper: "z. B. Verwaltung, Rücklage" },
 ];
 const STEUER: NF<S>[] = [
   { k: "grenz", label: "Grenzsteuersatz", unit: "%", helper: "Verluste aus der Vermietung mindern die Steuer auf das übrige Einkommen" },

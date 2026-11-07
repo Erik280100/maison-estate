@@ -67,7 +67,7 @@ export const D = {
   monate: 9,
   mVor: 1,
   mSan: 3,
-  hBk: 180,
+  hBk: 3,
   hEn: 40,
   hVers: 25,
   hGst: 10,
@@ -183,7 +183,7 @@ export function rechne(v: V, gewerke: Gewerk[], nk: NkPos[], o: Opts = {}) {
   const finNk = kreditVertrag + pfand + nebengeb + finSonst;
 
   // Halten
-  const halteM = num(v.hBk) + num(v.hEn) + num(v.hVers) + num(v.hGst) + num(v.hSo);
+  const halteM = num(v.hBk) * Math.max(num(v.flaeche), 0) + num(v.hEn) + num(v.hVers) + num(v.hGst) + num(v.hSo);
   const halte = halteM * M;
 
   // Verkauf
