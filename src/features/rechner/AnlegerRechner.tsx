@@ -67,9 +67,9 @@ const KREDITKOSTEN: NF<S>[] = [
   { k: "ngs", label: "Nebengebührenaufschlag", unit: "%", helper: "auf die Eintragung" },
 ];
 const ANNAHMEN: NF<S>[] = [
-  { k: "mietSteig", label: "Mietsteigerung p.a.", unit: "%", helper: "Wertsicherung, Excel: 2 %" },
-  { k: "wert", label: "Wertsteigerung der Wohnung p.a.", unit: "%", helper: "Excel: 2 %" },
-  { k: "leer", label: "Leerstand / Mietausfall", unit: "%", helper: "Excel: 0 %" },
+  { k: "mietSteig", label: "Mietsteigerung p.a.", unit: "%", helper: "Wertsicherung" },
+  { k: "wert", label: "Wertsteigerung der Wohnung p.a.", unit: "%" },
+  { k: "leer", label: "Leerstand / Mietausfall", unit: "%" },
   { k: "kostenM2", label: "Nicht umlegbare Kosten inkl. Rücklage", unit: "€/m²·Monat", helper: "z. B. Verwaltung, Rücklage" },
 ];
 const STEUER: NF<S>[] = [
@@ -79,7 +79,7 @@ const STEUER: NF<S>[] = [
 ];
 const STEUER_CHECKS: CF<S>[] = [
   { k: "beschl", label: "Beschleunigte AfA", helper: "Dreifacher Satz im 1., doppelter im 2. Jahr – nur für neu errichtete Wohngebäude (Fertigstellung bis 2026). Mit dem Steuerberater klären." },
-  { k: "gbk", label: "Kreditkosten steuerlich absetzen", helper: "Geldbeschaffungskosten, verteilt auf die Kreditlaufzeit (im Excel nicht enthalten)" },
+  { k: "gbk", label: "Kreditkosten steuerlich absetzen", helper: "Geldbeschaffungskosten, verteilt auf die Kreditlaufzeit" },
 ];
 
 export function AnlegerRechner() {
@@ -129,7 +129,7 @@ export function AnlegerRechner() {
         <Grid container spacing={2} sx={{ alignItems: "center" }}>
           <Grid size={{ xs: 12, md: 5 }}><TextField fullWidth label="Objekt" value={s.name} onChange={(e) => setS((o) => ({ ...o, name: e.target.value }))} /></Grid>
           <Grid size={{ xs: 12, md: 5 }}><TextField fullWidth label="Adresse" value={s.adresse} onChange={(e) => setS((o) => ({ ...o, adresse: e.target.value }))} /></Grid>
-          <Grid size={{ xs: 12, md: 2 }}><Button fullWidth variant="outlined" onClick={reset}>{armReset ? "Wirklich?" : "Excel-Werte"}</Button></Grid>
+          <Grid size={{ xs: 12, md: 2 }}><Button fullWidth variant="outlined" onClick={reset}>{armReset ? "Wirklich?" : "Standardwerte"}</Button></Grid>
         </Grid>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
           Beispielrechnung für Anleger: Netto-Kaufpreis, Nebenkosten auf den Bruttopreis, Kredit samt Kreditkosten, Mietsteigerung, AfA und Einkommensteuer. Alle Werte lassen sich anpassen.
@@ -294,7 +294,7 @@ export function AnlegerRechner() {
 
       <Section
         title="Jahresübersicht"
-        intro={`Wie im Excel: Miete, Kreditrate, Zinsen, Überschuss vor AfA, AfA, steuerpflichtiger Gewinn und Cashflow${zuzAktiv ? " – hier mit Zuzahlung" : ""}. Ein negativer Steuerbetrag ist eine Steuerersparnis.`}
+        intro={`Miete, Kreditrate, Zinsen, Überschuss vor AfA, AfA, steuerpflichtiger Gewinn und Cashflow${zuzAktiv ? " – hier mit Zuzahlung" : ""}. Ein negativer Steuerbetrag ist eine Steuerersparnis.`}
       >
         <TableContainer>
           <Table size="small">
