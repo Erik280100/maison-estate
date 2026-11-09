@@ -288,16 +288,16 @@ export function BelegEditor({ start, onClose }: { start: Beleg & { _lokal?: bool
               <Box>
                 <Typography variant="overline" color="text.secondary">Positionen</Typography>
                 <TableContainer sx={{ border: 1, borderColor: "divider", borderRadius: 2 }}>
-                  <Table size="small">
-                    <TableHead><TableRow><TableCell>Text</TableCell><TableCell sx={{ minWidth: 230 }}>Konto</TableCell><TableCell align="right">Netto €</TableCell><TableCell>USt %</TableCell><TableCell align="right">USt €</TableCell>{!ro && <TableCell />}</TableRow></TableHead>
+                  <Table size="small" sx={{ tableLayout: "fixed", minWidth: 760 }}>
+                    <TableHead><TableRow><TableCell>Text</TableCell><TableCell sx={{ width: "34%" }}>Konto</TableCell><TableCell align="right" sx={{ width: 120 }}>Netto €</TableCell><TableCell sx={{ width: 90 }}>USt %</TableCell><TableCell align="right" sx={{ width: 110 }}>USt €</TableCell>{!ro && <TableCell sx={{ width: 48 }} />}</TableRow></TableHead>
                     <TableBody>
                       {(d.positionen || []).map((p, i) => (
                         <TableRow key={i}>
-                          <TableCell sx={{ minWidth: 140 }}><Txt label="" value={p.text} onChange={(x) => setPos(i, { text: x })} disabled={ro} /></TableCell>
+                          <TableCell><Txt label="" value={p.text} onChange={(x) => setPos(i, { text: x })} disabled={ro} /></TableCell>
                           <TableCell><Sel label="" value={p.konto} onChange={(x) => setPos(i, { konto: x })} options={kontoOpts} disabled={ro} /></TableCell>
-                          <TableCell sx={{ minWidth: 110 }}><EuroField label="" value={p.netto} onChange={(x) => setPos(i, { netto: x })} disabled={ro} /></TableCell>
-                          <TableCell sx={{ minWidth: 84 }}><Sel label="" value={Number(p.satz)} onChange={(x) => setPos(i, { satz: Number(x) })} options={SAETZE.map((s): [number, string] => [s, String(s)])} disabled={ro} /></TableCell>
-                          <TableCell sx={{ minWidth: 100 }}><EuroField label="" value={p.ust} onChange={(x) => setPos(i, { ust: x })} disabled={ro || !!d.reverseCharge} /></TableCell>
+                          <TableCell><EuroField label="" value={p.netto} onChange={(x) => setPos(i, { netto: x })} disabled={ro} /></TableCell>
+                          <TableCell><Sel label="" value={Number(p.satz)} onChange={(x) => setPos(i, { satz: Number(x) })} options={SAETZE.map((s): [number, string] => [s, String(s)])} disabled={ro} /></TableCell>
+                          <TableCell><EuroField label="" value={p.ust} onChange={(x) => setPos(i, { ust: x })} disabled={ro || !!d.reverseCharge} /></TableCell>
                           {!ro && <TableCell><IconButton size="small" aria-label="Position entfernen" onClick={() => setD((x) => ({ ...x, positionen: (x.positionen || []).filter((_, j) => j !== i) }))}><DeleteOutlineRounded fontSize="small" /></IconButton></TableCell>}
                         </TableRow>
                       ))}
@@ -317,14 +317,14 @@ export function BelegEditor({ start, onClose }: { start: Beleg & { _lokal?: bool
               <Box>
                 <Typography variant="overline" color="text.secondary">Buchungszeilen</Typography>
                 <TableContainer sx={{ border: 1, borderColor: "divider", borderRadius: 2 }}>
-                  <Table size="small">
-                    <TableHead><TableRow><TableCell sx={{ minWidth: 230 }}>Konto</TableCell><TableCell align="right">Soll €</TableCell><TableCell align="right">Haben €</TableCell><TableCell>Text</TableCell>{!ro && <TableCell />}</TableRow></TableHead>
+                  <Table size="small" sx={{ tableLayout: "fixed", minWidth: 760 }}>
+                    <TableHead><TableRow><TableCell sx={{ width: "34%" }}>Konto</TableCell><TableCell align="right" sx={{ width: 130 }}>Soll €</TableCell><TableCell align="right" sx={{ width: 130 }}>Haben €</TableCell><TableCell>Text</TableCell>{!ro && <TableCell sx={{ width: 48 }} />}</TableRow></TableHead>
                     <TableBody>
                       {(d.zeilen || []).map((z, i) => (
                         <TableRow key={i}>
                           <TableCell><Sel label="" value={z.konto} onChange={(x) => setZeile(i, { konto: x })} options={kontoOpts} disabled={ro} /></TableCell>
-                          <TableCell sx={{ minWidth: 110 }}><EuroField label="" value={z.soll ? z.soll / 100 : null} onChange={(x) => setZeile(i, { soll: cents(x) })} disabled={ro} /></TableCell>
-                          <TableCell sx={{ minWidth: 110 }}><EuroField label="" value={z.haben ? z.haben / 100 : null} onChange={(x) => setZeile(i, { haben: cents(x) })} disabled={ro} /></TableCell>
+                          <TableCell><EuroField label="" value={z.soll ? z.soll / 100 : null} onChange={(x) => setZeile(i, { soll: cents(x) })} disabled={ro} /></TableCell>
+                          <TableCell><EuroField label="" value={z.haben ? z.haben / 100 : null} onChange={(x) => setZeile(i, { haben: cents(x) })} disabled={ro} /></TableCell>
                           <TableCell><Txt label="" value={z.text} onChange={(x) => setZeile(i, { text: x })} disabled={ro} /></TableCell>
                           {!ro && <TableCell><IconButton size="small" aria-label="Zeile entfernen" onClick={() => setD((x) => ({ ...x, zeilen: (x.zeilen || []).filter((_, j) => j !== i) }))}><DeleteOutlineRounded fontSize="small" /></IconButton></TableCell>}
                         </TableRow>
