@@ -2,7 +2,7 @@
 
 // Umschuldungsrechner: bestehenden Kredit mit allen Vertragsdaten gegen ein neues Angebot rechnen.
 // Rechenlogik: ./umschuldung/rechne.ts
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Chart as ChartJS, CategoryScale, LinearScale, LineElement, PointElement, Tooltip as ChartTooltip, Legend, Filler,
 } from "chart.js";
@@ -33,18 +33,9 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, ChartTooltip, Legend, Filler);
 
-const KEY = "maison-umschuldung-v3";
 const num = (v: unknown) => +(v as number) || 0;
 const th = { fontWeight: 700, whiteSpace: "nowrap", fontSize: 12 } as const;
 const td = { whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums", fontSize: 13 } as const;
-
-function loadDraft(): S {
-  try {
-    const d = JSON.parse(localStorage.getItem(KEY) || "null");
-    if (d) return { ...DEFAULTS, ...d };
-  } catch { /* ignorieren */ }
-  return DEFAULTS;
-}
 
 const ARTEN: [string, string][] = [["fix", "Fixzins ganze Laufzeit"], ["var", "Variabel: Euribor + Aufschlag"], ["misch", "Fix, danach variabel"]];
 const MONATE = ["Jänner", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
@@ -61,15 +52,11 @@ const zinsFelder = (X: "A" | "N"): NF<S>[] => {
 };
 
 export function UmschuldungsRechner() {
-  const [s, setS] = useState<S>(loadDraft);
-  const [msg, setMsg] = useState("Werte werden in diesem Browser gemerkt.");
+  const [s, setS] = useState<S>(DEFAULTS);
+  const [msg, setMsg] = useState("Start mit Standardwerten.");
   const [presetMsg, setPresetMsg] = useState("Vermittlungsprovision und Sollzins bleiben unverändert.");
   const [armed, setArmed] = useState(false);
   const [text, setText] = useState("");
-
-  useEffect(() => {
-    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* ignorieren */ }
-  }, [s]);
 
   const setN = (k: keyof S, v: number) => setS((o) => ({ ...o, [k]: v }));
   const setB = (k: keyof S, v: boolean) => setS((o) => ({ ...o, [k]: v }));

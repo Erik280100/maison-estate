@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import Chip from "@mui/material/Chip";
@@ -28,16 +28,13 @@ import {
 } from "./ankauf/rechne";
 import { Details, Line, NumField, Section, ampelColor } from "./ankauf/ui";
 
-const DRAFT_KEY = "maison-ankauf-draft-v1";
 const REF_KEY = "maison-bewertung-ref";
 const OBJ_KEY = "maison-ankauf-objekte";
 
-function loadDraft(): { v: V; gewerke: Gewerk[]; nk: NkPos[]; z: Zus; id: string | null } {
-  try {
-    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
-    if (d?.v) return { v: { ...D, ...d.v }, gewerke: d.gewerke ?? GEWERKE, nk: d.nk ?? SAN_NK, z: { ...ZUS0, ...d.z }, id: d.id ?? null };
-  } catch { /* ignorieren */ }
-  return { v: D, gewerke: GEWERKE, nk: SAN_NK, z: ZUS0, id: null };
+/** Alte Speicherstände: Betriebskosten + Rücklage waren ein Pauschalbetrag pro Monat (z. B. 180), jetzt €/m²·Monat. */
+function migriereV(v: V): V {
+  const m2 = num(v.flaeche);
+  return num(v.hBk) > 20 && m2 > 0 ? { ...v, hBk: Math.round((num(v.hBk) / m2) * 100) / 100 } : v;
 }
 function loadRef(): Ref {
   try {
@@ -47,18 +44,21 @@ function loadRef(): Ref {
   return REF0;
 }
 function loadObjs(): Objekt[] {
-  try { return JSON.parse(localStorage.getItem(OBJ_KEY) || "[]"); } catch { return []; }
+  try {
+    const list: Objekt[] = JSON.parse(localStorage.getItem(OBJ_KEY) || "[]");
+    return list.map((o) => (o.state?.v ? { ...o, state: { ...o.state, v: migriereV({ ...D, ...o.state.v }) } } : o));
+  } catch { return []; }
 }
 
 export function AnkaufVerkaufRechner() {
-  const [init] = useState(loadDraft);
-  const [v, setV] = useState<V>(init.v);
-  const [gewerke, setGewerke] = useState<Gewerk[]>(init.gewerke);
-  const [nk, setNk] = useState<NkPos[]>(init.nk);
-  const [z, setZState] = useState<Zus>(init.z);
+  // Immer Start mit Standardwerten; nur ein gespeichertes Objekt wird per „Laden“ geöffnet.
+  const [v, setV] = useState<V>(D);
+  const [gewerke, setGewerke] = useState<Gewerk[]>(GEWERKE);
+  const [nk, setNk] = useState<NkPos[]>(SAN_NK);
+  const [z, setZState] = useState<Zus>(ZUS0);
   const [REF, setREFState] = useState<Ref>(loadRef);
   const [objs, setObjs] = useState<Objekt[]>(loadObjs);
-  const [currentId, setCurrentId] = useState<string | null>(init.id);
+  const [currentId, setCurrentId] = useState<string | null>(null);
   const [msg, setMsg] = useState("");
   const [armReset, setArmReset] = useState(false);
   const setZ = (p: Partial<Zus>) => setZState((o) => ({ ...o, ...p }));
@@ -66,9 +66,6 @@ export function AnkaufVerkaufRechner() {
     setREFState(x);
     try { localStorage.setItem(REF_KEY, JSON.stringify(x)); } catch { /* ignorieren */ }
   };
-  useEffect(() => {
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v, gewerke, nk, z, id: currentId })); } catch { /* ignorieren */ }
-  }, [v, gewerke, nk, z, currentId]);
   const saveObj = (asNew: boolean) => {
     const x = rechne(v, gewerke, nk);
     let list = loadObjs(), id = currentId;
@@ -126,7 +123,7 @@ export function AnkaufVerkaufRechner() {
     ["Gewinn vor Steuern", eur(r.gewinn), true],
     ["Gewinn nach KöSt", eur(r.netto)],
     ["Marge auf Gesamtkosten", pct(r.marge)],
-    ["Eigenkapitalbedarf", eur(r.ek) + (vers ? ` + Vadium ${eur(Math.max(num(v.schaetz) * 0.1, 1000))}` : "")],
+    ["Eigenkapitalbedarf", eur(r.ek) + (vers ? ` · Vadium vorab ${eur(Math.max(num(v.schaetz) * 0.1, 1000))} (wird auf das Meistbot angerechnet)` : "")],
     ["Spitzenbedarf EK (Liquiditätsplan)", `${eur(C.peak)} · Monat ${C.peakM}`],
     ["Eigenkapitalrendite", `${pct(r.ek > 0 ? (r.gewinn / r.ek) * 100 : NaN)} · ${pct(r.roiPa)} p. a.`],
     ["Break-even Verkaufspreis", `${Math.round(L.vbe).toLocaleString("de-AT")} €/m²`],
@@ -408,7 +405,7 @@ export function AnkaufVerkaufRechner() {
                   </Grid>
                 </Grid>
               </Details>
-              <Details title="Zeitplan (für den Liquiditätsplan)" sum={`Start Monat ${num(v.mVor)} · ${num(v.mSan)} Monate`}>
+              <Details title="Zeitplan (für den Liquiditätsplan)" sum={`Start nach ${num(v.mVor)} Mon. · ${num(v.mSan)} Mon. Sanierung`}>
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <NumField label="Bis Sanierungsstart" suffix="Monate" value={v.mVor} onChange={set("mVor")} helper="Übergabe, Planung, Meldung" />
@@ -416,6 +413,13 @@ export function AnkaufVerkaufRechner() {
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <NumField label="Sanierungsdauer" suffix="Monate" value={v.mSan} onChange={set("mSan")} helper="Sanierungskosten werden gleichmäßig verteilt" />
                   </Grid>
+                  {Math.floor(num(v.mVor)) + Math.ceil(num(v.mSan)) > r.M && (
+                    <Grid size={12}>
+                      <Typography variant="caption" sx={{ color: "warning.main" }}>
+                        Vorlauf plus Sanierung ({Math.floor(num(v.mVor)) + Math.ceil(num(v.mSan))} Mon.) ist länger als die Haltedauer ({r.M} Mon.): Die Sanierungskosten werden im Liquiditätsplan in die Haltedauer gepresst.
+                      </Typography>
+                    </Grid>
+                  )}
                 </Grid>
               </Details>
             </Section>

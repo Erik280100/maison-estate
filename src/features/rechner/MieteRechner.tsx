@@ -2,7 +2,7 @@
 
 // Mietrechner: Rendite, Cashflow, Bankfähigkeit, Stresstest und Exit für vermietete Wohnungen (MRG).
 // Rechenlogik: ./miete/rechne.ts · Export: ./miete/export.ts
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   Chart as ChartJS, CategoryScale, LinearScale, LineElement, PointElement, Tooltip as ChartTooltip, Legend, Filler,
 } from "chart.js";
@@ -37,7 +37,6 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, ChartTooltip, Legend, Filler);
 
-const KEY = "maison-miet-draft-v2";
 const LKEY = "maison-miet-objekte";
 const num = (v: unknown) => +(v as number) || 0;
 
@@ -46,13 +45,6 @@ type Objekt = {
   ziel: number; state: S; updatedAt: number;
 };
 
-function loadDraft(): { s: S; id: string | null } {
-  try {
-    const d = JSON.parse(localStorage.getItem(KEY) || "null");
-    if (d?.S) return { s: { ...DEFAULTS, ...d.S }, id: d.id ?? null };
-  } catch { /* ignorieren */ }
-  return { s: DEFAULTS, id: null };
-}
 function loadList(): Objekt[] {
   try { return JSON.parse(localStorage.getItem(LKEY) || "[]"); } catch { return []; }
 }
@@ -99,9 +91,8 @@ const th = { fontWeight: 700, whiteSpace: "nowrap", fontSize: 12 } as const;
 const td = { whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums", fontSize: 13 } as const;
 
 export function MieteRechner() {
-  const [init] = useState(loadDraft);
-  const [s, setS] = useState<S>(init.s);
-  const [currentId, setCurrentId] = useState<string | null>(init.id);
+  const [s, setS] = useState<S>(DEFAULTS);
+  const [currentId, setCurrentId] = useState<string | null>(null);
   const [view, setView] = useState<"intern" | "kunde">("intern");
   const [objs, setObjs] = useState<Objekt[]>(loadList);
   const [msg, setMsg] = useState("");
@@ -110,10 +101,6 @@ export function MieteRechner() {
   const [armReset, setArmReset] = useState(false);
   const [armDel, setArmDel] = useState<string | null>(null);
   const k = view === "kunde";
-
-  useEffect(() => {
-    try { localStorage.setItem(KEY, JSON.stringify({ S: s, id: currentId })); } catch { /* ignorieren */ }
-  }, [s, currentId]);
 
   const setN = (key: keyof S, v: number) => setS((o) => ({ ...o, [key]: v }));
   const setB = (key: keyof S, v: boolean) => setS((o) => ({ ...o, [key]: v }));

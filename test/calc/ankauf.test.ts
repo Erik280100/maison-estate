@@ -101,6 +101,26 @@ describe("Ankauf: Plan B (Halten)", () => {
   it("Nebenkosten der Anschaffung gehen netto in die Investition ein", () => {
     const h = halten({ ...D, maklerOn: true }, GEWERKE, SAN_NK);
     const r = run({ maklerOn: true });
-    close(h.invest, r.kp + r.grest + r.eintr + (r.notar + r.makler) / 1.2 + r.sanNet + r.finNk, 1e-6);
+    close(h.invest, r.kp + r.grest + r.eintr + (r.notar + r.makler) / 1.2 + r.kaufSonst + r.sonder + r.sanNet + r.finNk, 1e-6);
+  });
+  it("Räumung und Sonderumlage erhöhen die Investition", () => {
+    const a = halten({ ...D, kaufSonst: 0, sonder: 0 }, GEWERKE, SAN_NK).invest;
+    close(halten({ ...D, kaufSonst: 1500, sonder: 4000 }, GEWERKE, SAN_NK).invest - a, 5500, 1e-6);
+  });
+});
+
+describe("Ankauf: Betriebskosten + Rücklage in €/m²·Monat", () => {
+  it("Standard ist ein m²-Wert, kein Monatsbetrag", () => {
+    expect(D.hBk).toBeLessThan(20);
+  });
+  it("Haltekosten skalieren mit der Fläche", () => {
+    const a = run({ flaeche: 60, hBk: 3, hEn: 0, hVers: 0, hGst: 0, hSo: 0, monate: 10 });
+    close(a.halteM, 180);
+    close(a.halte, 1800);
+    close(run({ flaeche: 100, hBk: 3, hEn: 0, hVers: 0, hGst: 0, hSo: 0, monate: 10 }).halte, 3000);
+  });
+  it("0 Monate Haltedauer: Liquiditätsplan stimmt mit dem Gewinn überein", () => {
+    const c = cash({ ...D, monate: 0 }, GEWERKE, SAN_NK);
+    close(c.R[c.R.length - 1].cum, c.r.gewinn, 1e-4);
   });
 });

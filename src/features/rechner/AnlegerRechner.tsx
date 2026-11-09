@@ -3,7 +3,7 @@
 // Anlegerwohnungsrechner (Verkauf): zeigt dem Kunden Mietrendite, Eigenkapitalrendite, Cashflow nach Steuer und AfA.
 // Optional mit monatlicher Zuzahlung (direkt tilgen / Depot / FLV), die den Kredit früher zurückzahlt.
 // Rechenlogik: ./anleger/rechne.ts (Grundlage: DAS IMMO EXCEL – mit Maximalkreditbetrag)
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Chart as ChartJS, CategoryScale, LinearScale, LineElement, PointElement, Tooltip as ChartTooltip, Legend, Filler,
 } from "chart.js";
@@ -31,17 +31,8 @@ import { DEFAULTS, MODUS_TEXT, calc, eur, jahreMonate, n2, pct, type Modus, type
 
 ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, ChartTooltip, Legend, Filler);
 
-const KEY = "maison-anleger-draft-v1";
 const th = { fontWeight: 700, whiteSpace: "nowrap", fontSize: 12 } as const;
 const td = { whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums", fontSize: 13 } as const;
-
-function loadDraft(): S {
-  try {
-    const d = JSON.parse(localStorage.getItem(KEY) || "null");
-    if (d) return { ...DEFAULTS, ...d };
-  } catch { /* ignorieren */ }
-  return DEFAULTS;
-}
 
 const OBJEKT: NF<S>[] = [
   { k: "A", label: "Größe", unit: "m²" },
@@ -83,11 +74,8 @@ const STEUER_CHECKS: CF<S>[] = [
 ];
 
 export function AnlegerRechner() {
-  const [s, setS] = useState<S>(loadDraft);
+  const [s, setS] = useState<S>(DEFAULTS);
   const [armReset, setArmReset] = useState(false);
-  useEffect(() => {
-    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* ignorieren */ }
-  }, [s]);
 
   const setN = (k: keyof S, v: number) => setS((o) => ({ ...o, [k]: v }));
   const setB = (k: keyof S, v: boolean) => setS((o) => ({ ...o, [k]: v }));

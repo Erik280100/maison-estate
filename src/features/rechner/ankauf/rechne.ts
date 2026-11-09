@@ -225,7 +225,7 @@ export function cash(v: V, g: Gewerk[], nk: NkPos[], o: Opts = {}) {
   const end = Math.min(N, start + Math.max(1, Math.ceil(num(v.mSan))) - 1);
   for (let m = start; m <= end; m++) R[m].san += r.san / (end - start + 1);
   for (let m = 1; m <= N; m++) {
-    R[m].halte = r.halteM;
+    R[m].halte = m <= r.M ? r.halteM : 0; // bei 0 Monaten Haltedauer fallen keine Haltekosten an (wie in rechne)
     R[m].zins = r.zA[m] ?? 0;
     R[m].tilg = r.tA[m] ?? 0;
   }
@@ -267,7 +267,8 @@ export function halten(v: V, g: Gewerk[], nk: NkPos[]) {
   const p = (x: number) => num(x) / 100;
   const ustF = 1 + p(v.ust);
   const ankauf = r.kp + r.grest + r.eintr + (r.notar + r.makler) / (v.ustOpt ? 1 : ustF);
-  const invest = ankauf + r.sanNet + r.finNk;
+  // Räumung/Schlüsseldienst und Sonderumlage sind echte Geldabflüsse, aber nicht Teil der AfA-Basis
+  const invest = ankauf + r.kaufSonst + r.sonder + r.sanNet + r.finNk;
   const mieteJ = num(v.miete) * r.A * 12;
   const eff = mieteJ * (1 - p(v.leer));
   const kosten = num(v.nichtuml) * 12 + num(v.instand) * r.A;

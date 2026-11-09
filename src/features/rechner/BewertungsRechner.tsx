@@ -2,7 +2,7 @@
 
 // Bewertungsrechner: Verkehrswert einer Wohnung vor dem Kauf (Graz, Graz-Umgebung, Leibnitz), Kaufpreis-Check und Bankensicht.
 // Rechenlogik: ./bewertung/rechne.ts · Daten: ./bewertung/daten.ts · Kern: ./ankauf/zusatzRechne.ts (bewertKern)
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -30,22 +30,12 @@ import { Line, NumField, Section } from "./ankauf/ui";
 import { QUELLEN, REGIONEN, type Region } from "./bewertung/daten";
 import { DEFAULTS, bauKat, bewerte, lagefaktor, orte, rndAuto, type S } from "./bewertung/rechne";
 
-const KEY = "maison-bewertung-wohnung-v1";
 const th = { whiteSpace: "nowrap", fontWeight: 700, py: 0.75 } as const;
 const tc = { whiteSpace: "nowrap", py: 0.75, fontVariantNumeric: "tabular-nums" } as const;
 const n0 = (x: number) => (Number.isFinite(x) ? Math.round(x).toLocaleString("de-AT") : "–");
 const sgn = (x: number, d = 1) => (x >= 0 ? "+" : "") + x.toLocaleString("de-AT", { maximumFractionDigits: d });
 const GOOD = "success.main", BAD = "error.main", WARN = "warning.main";
 const AMPEL = { good: GOOD, warn: WARN, bad: BAD } as const;
-
-function load(): S {
-  if (typeof window === "undefined") return DEFAULTS;
-  try {
-    const d = JSON.parse(localStorage.getItem(KEY) || "null");
-    if (d) return { ...DEFAULTS, ...d };
-  } catch { /* ignorieren */ }
-  return DEFAULTS;
-}
 
 function Sel({ label, value, options, onChange, helper }: { label: string; value: string; options: string[]; onChange: (s: string) => void; helper?: string }) {
   return (
@@ -66,10 +56,7 @@ function Kpi({ label, value, sub, color }: { label: string; value: ReactNode; su
 }
 
 export function BewertungsRechner() {
-  const [s, setS] = useState<S>(load);
-  useEffect(() => {
-    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* ignorieren */ }
-  }, [s]);
+  const [s, setS] = useState<S>(DEFAULTS);
 
   const set = (p: Partial<S>) => setS((o) => ({ ...o, ...p }));
   const setRegion = (region: Region) => set({ region, ort: orte(region)[0] });
