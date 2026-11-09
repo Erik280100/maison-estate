@@ -3,8 +3,8 @@ import { KREDIT_DEFAULTS } from "../kredit/kredit";
 // ---------------------------------------------------------------------------
 // Standardwerte
 // Kauf-/Kreditnebenkosten: identisch mit dem Finanzierungsrechner (AT, Stand 2026).
-// Sanierung: Richtwert 1.000 €/m² brutto (Mitte zwischen mittlerer Sanierung
-// 700–1.000 und Kernsanierung 1.000–1.500 €/m²). Gewerke wie im Fix-&-Flip-Rechner.
+// Sanierung: Standardwert 500 €/m² brutto (mittlere Sanierung 700–1.000, Kernsanierung 1.000–1.500 €/m² zum Vergleich).
+// Gewerke wie im Fix-&-Flip-Rechner.
 // Alles sind Platzhalter und im Formular änderbar.
 // ---------------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ export const D = {
   ziel: 10,
   // Sanierung
   sanModus: "pausch" as "pausch" | "gewerke",
-  sanM2: 1000,
+  sanM2: 500,
   puffer: 10,
   // Zeitplan
   monate: 9,
@@ -83,7 +83,7 @@ export const D = {
   nebengebPct: KREDIT_DEFAULTS.nebengebuehrensicherstellungPct,
   finSonst: 0,
   // Verkauf
-  verkM2: 4500,
+  verkM2: 3000,
   provision: 3, // Makler-Honorar Verkauf: 3 % zzgl. 20 % USt = 3,6 % (marktüblich)
   provisionUst: true,
   rlOn: true,
