@@ -69,7 +69,7 @@ export const D = {
   mSan: 3,
   hBk: 3,
   hEn: 40,
-  hVers: 25,
+  hVers: 15,
   hGst: 10,
   hSo: 0,
   // Finanzierung
