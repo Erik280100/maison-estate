@@ -25,7 +25,7 @@ const tiles = [
     href: "/intern/buchhaltung/",
     kicker: "Finanzen",
     title: "Buchhaltung",
-    text: "Belege erfassen und buchen, Kontoauszüge, Kredite, Journal, Saldenliste und Umsatzsteuer.",
+    text: "Rechnungen ablegen und buchen, Einnahmen, Ausgaben und Investitionen je Objekt, Anlagen, Auslagen der Gesellschafter, Bank, Kredite und Umsatzsteuer.",
     icon: <AccountBalanceRounded />,
   },
   ...rechner.map((r) => ({

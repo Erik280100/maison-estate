@@ -66,3 +66,11 @@ Einrichtung:
 3. Team per Authentication → Users → Invite/Add user anlegen.
 4. Project Settings → API: `URL` und `anon public key` als Repository-Variablen `NEXT_PUBLIC_SUPABASE_URL` und `NEXT_PUBLIC_SUPABASE_ANON_KEY` setzen (lokal in `.env.local`).
 5. Authentication → URL Configuration: Site URL `https://maison-estate.at`.
+
+## Buchhaltung (`/intern/buchhaltung`)
+
+Native Oberfläche (`src/features/buchhaltung/`), Daten in Supabase. Reiter: Übersicht (Einnahmen, Ausgaben, Investitionen), Belege (Upload + Editor), Archiv, Bank (CSV-Import), Objekte (Ankauf/Sanierung/Erlös/Marge je Projekt), Anlagen (AfA), Gesellschafter (privat bezahlte Auslagen, Verrechnungskonten 3181–3189), Kredite, Offene Posten, Journal, Saldenliste, Umsatzsteuer, Prüfung (Hash-Kette, Festschreibung, ZIP-Export).
+
+Einrichtung (SQL Editor, in dieser Reihenfolge): `supabase/007_buchhaltung.sql`, dann `supabase/011_buchhaltung_erweiterung.sql`. Der private Bucket `buchhaltung` entsteht durch 007; die alte `app.html` im Bucket wird nicht mehr gebraucht.
+
+Rechnungen werden ohne KI erfasst: Original ablegen (SHA-256), Datum, Beträge, UID und Rechnungsnummer werden aus dem PDF-Text vorbefüllt, der Rest wird im Editor geprüft. Logik und Tests: `src/features/buchhaltung/logik/`, `test/calc/buchhaltung.test.ts`.
